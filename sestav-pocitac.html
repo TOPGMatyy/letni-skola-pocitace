@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sestav počítač! – Soutěžní hra</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  :root{
+    --bg:#0f172a; --card:#1e293b; --card2:#273449;
+    --accent:#38bdf8; --good:#22c55e; --bad:#ef4444; --warn:#fbbf24;
+    --text:#e2e8f0; --muted:#94a3b8;
+  }
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:radial-gradient(circle at 50% 0%,#1e293b,#0f172a 70%);
+    color:var(--text); min-height:100vh; overflow-x:hidden;
+    touch-action:manipulation;
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:14px 14px 40px;}
+
+  /* HUD */
+  .hud{
+    position:sticky;top:0;z-index:20;
+    display:flex;gap:8px;align-items:center;justify-content:space-between;
+    background:rgba(15,23,42,.85);backdrop-filter:blur(8px);
+    padding:10px 8px;border-radius:0 0 14px 14px;margin:-14px -14px 12px;
+  }
+  .hud .pill{
+    background:var(--card);border-radius:12px;padding:6px 12px;
+    font-size:13px;font-weight:600;display:flex;flex-direction:column;align-items:center;line-height:1.15;
+  }
+  .hud .pill b{font-size:18px;color:var(--accent);}
+  .hud .pill.time b{color:var(--warn);}
+  .hud .pill.score b{color:var(--good);}
+
+  h1{font-size:22px;text-align:center;margin:6px 0 2px;}
+  .sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:16px;}
+
+  .btn{
+    display:block;width:100%;border:none;border-radius:14px;
+    padding:16px;font-size:17px;font-weight:700;color:#04121f;
+    background:linear-gradient(180deg,#7dd3fc,#38bdf8);
+    cursor:pointer;margin-top:12px;box-shadow:0 6px 16px rgba(56,189,248,.3);
+  }
+  .btn.secondary{background:var(--card2);color:var(--text);box-shadow:none;}
+  .btn:active{transform:translateY(1px);}
+
+  .card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:14px;}
+
+  /* Level */
+  .level-title{font-size:19px;font-weight:700;margin:2px 0 4px;}
+  .level-hint{color:var(--muted);font-size:14px;margin-bottom:14px;}
+
+  .zones{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  .zone{
+    border:2px dashed #3b5474;border-radius:14px;padding:12px 14px;
+    min-height:60px;display:flex;align-items:center;gap:12px;
+    background:var(--card2);transition:border-color .15s,background .15s;
+  }
+  .zone.over{border-color:var(--accent);background:#1d3a52;}
+  .zone.filled{border-style:solid;}
+  .zone.correct{border-color:var(--good);background:#14351f;}
+  .zone .zlabel{flex:1;}
+  .zone .zname{font-weight:700;font-size:15px;}
+  .zone .zdesc{color:var(--muted);font-size:12px;margin-top:2px;}
+  .zone .slot{
+    min-width:96px;min-height:40px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    background:#0f1c2e;border:1px solid #2b3f59;font-size:13px;color:var(--muted);
+    text-align:center;padding:4px 6px;
+  }
+  .zone.correct .slot{background:#14351f;border-color:var(--good);color:#bbf7d0;font-weight:700;}
+
+  .bank{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+    min-height:56px;padding-top:6px;border-top:1px solid #2b3f59;}
+  .chip{
+    background:linear-gradient(180deg,#334966,#273449);
+    border:1px solid #46618a;border-radius:12px;
+    padding:12px 14px;font-size:15px;font-weight:600;
+    cursor:grab;touch-action:none;user-select:none;
+    display:flex;align-items:center;gap:8px;box-shadow:0 3px 8px rgba(0,0,0,.3);
+  }
+  .chip .ico{font-size:20px;}
+  .chip.dragging{opacity:.35;}
+  .chip.placed{display:none;}
+  .drag-ghost{
+    position:fixed;z-index:999;pointer-events:none;
+    background:linear-gradient(180deg,#38bdf8,#0ea5e9);color:#04121f;
+    border-radius:12px;padding:12px 14px;font-size:15px;font-weight:700;
+    box-shadow:0 8px 24px rgba(0,0,0,.5);display:flex;align-items:center;gap:8px;
+    transform:translate(-50%,-50%) scale(1.05);
+  }
+
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
+    background:var(--card);padding:12px 18px;border-radius:12px;font-weight:600;
+    z-index:50;opacity:0;transition:opacity .2s;pointer-events:none;
+    border:1px solid #33465f;font-size:14px;
+  }
+  .toast.show{opacity:1;}
+  .toast.good{border-color:var(--good);}
+  .toast.bad{border-color:var(--bad);}
+
+  .center{text-align:center;}
+  .big-num{font-size:46px;font-weight:800;color:var(--accent);margin:6px 0;}
+  .result-row{display:flex;justify-content:space-between;padding:10px 4px;border-bottom:1px solid #2b3f59;font-size:15px;}
+  .result-row b{color:var(--accent);}
+  .code-box{
+    background:#04121f;border:2px solid var(--accent);border-radius:14px;
+    padding:16px;text-align:center;margin:16px 0;
+  }
+  .code-box .lbl{color:var(--muted);font-size:13px;}
+  .code-box .code{font-size:34px;font-weight:800;letter-spacing:3px;color:var(--good);font-family:monospace;}
+  .progress{display:flex;gap:5px;justify-content:center;margin:8px 0 4px;}
+  .progress .dot{width:9px;height:9px;border-radius:50%;background:#33465f;}
+  .progress .dot.done{background:var(--good);}
+  .progress .dot.cur{background:var(--accent);}
+  .hidden{display:none !important;}
+  .emoji{font-size:52px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HUD -->
+  <div class="hud hidden" id="hud">
+    <div class="pill">Úroveň<b id="hudLevel">1/4</b></div>
+    <div class="pill time">Čas<b id="hudTime">0:00</b></div>
+    <div class="pill score">Skóre<b id="hudScore">0</b></div>
+  </div>
+
+  <!-- START -->
+  <div id="startScreen">
+    <div class="center emoji">🖥️</div>
+    <h1>Sestav počítač!</h1>
+    <div class="sub">Soutěžní hra o 10 kolech – přetahuj komponenty na správná místa. Kdo má nejvíc bodů a nejlepší čas, vyhrává!</div>
+    <div class="card">
+      <div class="level-title">Jak se hraje</div>
+      <div class="level-hint" style="margin-bottom:6px">
+        🧩 Chytni komponentu prstem a přetáhni ji na místo, kam patří.<br><br>
+        ✅ Správně = <b style="color:var(--good)">+10 bodů</b><br>
+        ❌ Špatně = <b style="color:var(--bad)">−3 body</b> (zkus jinam)<br>
+        ⏱️ Hraje se na čas – buď rychlý!<br><br>
+        📚 Čeká tě <b>10 kol</b> o počítačích: základní deska, procesor, paměti, sítě, bezpečnost a další.
+      </div>
+    </div>
+    <input id="playerName" placeholder="Tvoje jméno / přezdívka" style="width:100%;padding:14px;border-radius:12px;border:1px solid #33465f;background:var(--card2);color:var(--text);font-size:16px;margin-top:4px">
+    <button class="btn" onclick="startGame()">▶ Spustit hru</button>
+  </div>
+
+  <!-- GAME -->
+  <div id="gameScreen" class="hidden">
+    <div class="progress" id="progress"></div>
+    <div class="card">
+      <div class="level-title" id="levelTitle"></div>
+      <div class="level-hint" id="levelHint"></div>
+      <div class="zones" id="zones"></div>
+      <div class="bank" id="bank"></div>
+    </div>
+    <button class="btn secondary" id="nextBtn" onclick="nextLevel()" disabled>Další úroveň →</button>
+  </div>
+
+  <!-- END -->
+  <div id="endScreen" class="hidden">
+    <div class="center emoji">🏆</div>
+    <h1>Hotovo!</h1>
+    <div class="sub" id="endName"></div>
+    <div class="card center">
+      <div style="color:var(--muted);font-size:14px">Tvoje skóre</div>
+      <div class="big-num" id="finalScore">0</div>
+      <div class="result-row"><span>⏱️ Celkový čas</span><b id="finalTime">0:00</b></div>
+      <div class="result-row"><span>✅ Správně na první pokus</span><b id="finalPerfect">0</b></div>
+      <div class="result-row"><span>❌ Chybné pokusy</span><b id="finalWrong">0</b></div>
+    </div>
+    <div class="code-box">
+      <div class="lbl">Nahlas tento kód učiteli pro žebříček:</div>
+      <div class="code" id="finalCode">—</div>
+    </div>
+    <button class="btn" onclick="location.reload()">🔄 Hrát znovu</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="ghostLayer"></div>
+
+<script>
+/* ---------- OBSAH HRY ---------- */
+const LEVELS = [
+  {
+    title: "1. Základní deska (motherboard)",
+    hint: "Kam na základní desce patří která komponenta? Přetáhni ji do správného slotu.",
+    zones: [
+      {name:"Patice CPU (socket)", desc:"srdce počítače, sem patří...", answer:"cpu"},
+      {name:"Sloty RAM (DIMM)", desc:"operační paměť", answer:"ram"},
+      {name:"Slot PCIe ×16", desc:"nejrychlejší slot pro kartu", answer:"gpu"},
+      {name:"Konektor M.2 / SATA", desc:"úložiště dat", answer:"ssd"},
+      {name:"24pin konektor", desc:"přívod energie", answer:"psu"},
+    ],
+    chips: [
+      {id:"cpu", ico:"🧠", label:"Procesor (CPU)"},
+      {id:"ram", ico:"📊", label:"Paměť RAM"},
+      {id:"gpu", ico:"🎮", label:"Grafická karta"},
+      {id:"ssd", ico:"💾", label:"SSD disk"},
+      {id:"psu", ico:"🔌", label:"Napájení (PSU)"},
+    ]
+  },
+  {
+    title: "2. Z čeho se skládá procesor (CPU)",
+    hint: "Procesor má několik částí. Přiřaď každou k tomu, co dělá.",
+    zones: [
+      {name:"ALU", desc:"provádí výpočty a logiku", answer:"alu"},
+      {name:"Řadič (Control Unit)", desc:"řídí a organizuje běh instrukcí", answer:"cu"},
+      {name:"Registry", desc:"nejrychlejší malá paměť přímo v CPU", answer:"reg"},
+      {name:"Cache (L1/L2/L3)", desc:"rychlá vyrovnávací paměť", answer:"cache"},
+      {name:"Jádra (cores)", desc:"kolik věcí zvládne najednou", answer:"cores"},
+    ],
+    chips: [
+      {id:"alu", ico:"➗", label:"Aritmeticko-logická jednotka"},
+      {id:"cu", ico:"🎛️", label:"Řídicí jednotka"},
+      {id:"reg", ico:"⚡", label:"Registry"},
+      {id:"cache", ico:"🗂️", label:"Cache paměť"},
+      {id:"cores", ico:"🔢", label:"Výpočetní jádra"},
+    ]
+  },
+  {
+    title: "3. Vstupní vs. výstupní zařízení",
+    hint: "Kam patří jednotlivá zařízení? Rozděl je podle toho, jestli data zadávají, nebo zobrazují.",
+    zones: [
+      {name:"Vstupní: píše/ovládá", desc:"zadává data do PC", answer:"klavesnice"},
+      {name:"Vstupní: pohyb kurzoru", desc:"ukazuje na obrazovce", answer:"mys"},
+      {name:"Vstupní: zvuk", desc:"nahrává hlas", answer:"mikrofon"},
+      {name:"Výstupní: obraz", desc:"zobrazuje výsledek", answer:"monitor"},
+      {name:"Výstupní: zvuk ven", desc:"přehrává zvuk", answer:"repro"},
+    ],
+    chips: [
+      {id:"klavesnice", ico:"⌨️", label:"Klávesnice"},
+      {id:"mys", ico:"🖱️", label:"Myš"},
+      {id:"mikrofon", ico:"🎤", label:"Mikrofon"},
+      {id:"monitor", ico:"🖥️", label:"Monitor"},
+      {id:"repro", ico:"🔊", label:"Reproduktory"},
+    ]
+  },
+  {
+    title: "4. Paměťová hierarchie",
+    hint: "Seřaď paměti podle toho, co která dělá – od nejrychlejší po dlouhodobé úložiště.",
+    zones: [
+      {name:"Nejrychlejší, přímo v CPU", desc:"malinká, bleskurychlá", answer:"registry"},
+      {name:"Vyrovnávací paměť CPU", desc:"rychlá mezipaměť", answer:"cache"},
+      {name:"Operační paměť", desc:"běžící programy, mizí po vypnutí", answer:"ram"},
+      {name:"Rychlé úložiště", desc:"trvalá data, žádné pohyblivé části", answer:"ssd"},
+      {name:"Velkokapacitní úložiště", desc:"levné, hodně dat, točící se plotny", answer:"hdd"},
+    ],
+    chips: [
+      {id:"registry", ico:"⚡", label:"Registry"},
+      {id:"cache", ico:"🗂️", label:"Cache"},
+      {id:"ram", ico:"📊", label:"RAM"},
+      {id:"ssd", ico:"💾", label:"SSD"},
+      {id:"hdd", ico:"🪩", label:"Pevný disk (HDD)"},
+    ]
+  },
+  {
+    title: "5. Porty a konektory",
+    hint: "Co se zapojuje do kterého portu na počítači? Přiřaď zařízení k jeho konektoru.",
+    zones: [
+      {name:"USB-A", desc:"myš, klávesnice, flashka", answer:"usb"},
+      {name:"HDMI", desc:"obraz i zvuk do monitoru/TV", answer:"hdmi"},
+      {name:"RJ-45 (Ethernet)", desc:"připojení k internetu kabelem", answer:"lan"},
+      {name:"Jack 3,5 mm", desc:"sluchátka nebo mikrofon", answer:"jack"},
+      {name:"USB-C", desc:"moderní univerzální, oboustranný", answer:"usbc"},
+      {name:"Napájecí konektor", desc:"přívod elektřiny do PC", answer:"power"},
+    ],
+    chips: [
+      {id:"usb", ico:"🔌", label:"Flash disk"},
+      {id:"hdmi", ico:"📺", label:"Monitor / TV"},
+      {id:"lan", ico:"🌐", label:"Síťový kabel"},
+      {id:"jack", ico:"🎧", label:"Sluchátka"},
+      {id:"usbc", ico:"📱", label:"Telefon (USB-C)"},
+      {id:"power", ico:"⚡", label:"Napájecí kabel"},
+    ]
+  },
+  {
+    title: "6. Co dělá která komponenta?",
+    hint: "Přiřaď komponentu k úkolu, který v počítači plní.",
+    zones: [
+      {name:"Napájí celý počítač", desc:"mění proud ze zásuvky", answer:"psu"},
+      {name:"Odvádí teplo z procesoru", desc:"aby se CPU nepřehřál", answer:"cooler"},
+      {name:"Vykresluje obraz a hry", desc:"počítá grafiku", answer:"gpu"},
+      {name:"Propojuje všechny součástky", desc:"páteř celé sestavy", answer:"mb"},
+      {name:"Ukládá systém a data", desc:"zůstane i po vypnutí", answer:"disk"},
+      {name:"Chrání a drží komponenty", desc:"obal celé sestavy", answer:"case"},
+    ],
+    chips: [
+      {id:"psu", ico:"🔌", label:"Zdroj (PSU)"},
+      {id:"cooler", ico:"🌀", label:"Chladič / větrák"},
+      {id:"gpu", ico:"🎮", label:"Grafická karta"},
+      {id:"mb", ico:"🟩", label:"Základní deska"},
+      {id:"disk", ico:"💾", label:"SSD / disk"},
+      {id:"case", ico:"📦", label:"Skříň (case)"},
+    ]
+  },
+  {
+    title: "7. Jednotky informace",
+    hint: "Seřaď jednotky podle velikosti – od nejmenší po největší.",
+    zones: [
+      {name:"Nejmenší jednotka", desc:"0 nebo 1", answer:"bit"},
+      {name:"8 bitů = ...", desc:"jeden znak/písmeno", answer:"byte"},
+      {name:"asi 1 000 bajtů", desc:"krátký textový soubor", answer:"kb"},
+      {name:"asi 1 000 kB", desc:"fotka z mobilu", answer:"mb"},
+      {name:"asi 1 000 MB", desc:"celý film", answer:"gb"},
+    ],
+    chips: [
+      {id:"bit", ico:"🔘", label:"Bit"},
+      {id:"byte", ico:"🔤", label:"Byte (bajt)"},
+      {id:"kb", ico:"📄", label:"Kilobyte (kB)"},
+      {id:"mb", ico:"🖼️", label:"Megabyte (MB)"},
+      {id:"gb", ico:"🎬", label:"Gigabyte (GB)"},
+    ]
+  },
+  {
+    title: "8. Hardware vs. software",
+    hint: "Hardware si můžeš sáhnout, software je program. Přiřaď každou věc k jejímu popisu.",
+    zones: [
+      {name:"Hardware – počítá", desc:"fyzický čip", answer:"cpu"},
+      {name:"Hardware – psaní", desc:"na dotek, klávesy", answer:"kb"},
+      {name:"Hardware – obraz", desc:"vidíš na něm výsledek", answer:"mon"},
+      {name:"Software – řídí celý PC", desc:"program pod vším", answer:"os"},
+      {name:"Software – web", desc:"prohlížíš stránky", answer:"browser"},
+      {name:"Software – dokumenty", desc:"píšeš v něm texty", answer:"editor"},
+    ],
+    chips: [
+      {id:"cpu", ico:"🧠", label:"Procesor"},
+      {id:"kb", ico:"⌨️", label:"Klávesnice"},
+      {id:"mon", ico:"🖥️", label:"Monitor"},
+      {id:"os", ico:"🪟", label:"Operační systém"},
+      {id:"browser", ico:"🌍", label:"Prohlížeč"},
+      {id:"editor", ico:"📝", label:"Textový editor"},
+    ]
+  },
+  {
+    title: "9. Síť a internet",
+    hint: "Jak se počítač připojí k internetu? Přiřaď zařízení k jeho roli.",
+    zones: [
+      {name:"Rozvádí Wi-Fi po bytě", desc:"bezdrátové připojení doma", answer:"router"},
+      {name:"Připojí dům k poskytovateli", desc:"brána k internetu", answer:"modem"},
+      {name:"Propojí víc zařízení kabelem", desc:"rozbočovač sítě", answer:"switch"},
+      {name:"Poskytuje weby a data", desc:"běží nonstop v datacentru", answer:"server"},
+      {name:"Přenáší data mezi zařízeními", desc:"fyzické propojení", answer:"cable"},
+    ],
+    chips: [
+      {id:"router", ico:"📶", label:"Router"},
+      {id:"modem", ico:"🛰️", label:"Modem"},
+      {id:"switch", ico:"🔀", label:"Switch"},
+      {id:"server", ico:"🗄️", label:"Server"},
+      {id:"cable", ico:"🧵", label:"Ethernet kabel"},
+    ]
+  },
+  {
+    title: "10. Bezpečnost a péče o data",
+    hint: "Poslední kolo! Jak chránit počítač a data? Přiřaď ochranu k tomu, co dělá.",
+    zones: [
+      {name:"Chrání před viry", desc:"hlídá škodlivý software", answer:"antivir"},
+      {name:"Kopie dat pro jistotu", desc:"když se disk pokazí", answer:"backup"},
+      {name:"Přihlášení navíc (2. krok)", desc:"kód z telefonu", answer:"2fa"},
+      {name:"Skryje připojení k internetu", desc:"šifrovaný tunel", answer:"vpn"},
+      {name:"Silné a jedinečné", desc:"nemá být '12345'", answer:"heslo"},
+    ],
+    chips: [
+      {id:"antivir", ico:"🛡️", label:"Antivirus"},
+      {id:"backup", ico:"🗂️", label:"Záloha dat"},
+      {id:"2fa", ico:"🔐", label:"Dvoufázové ověření"},
+      {id:"vpn", ico:"🕶️", label:"VPN"},
+      {id:"heslo", ico:"🔑", label:"Silné heslo"},
+    ]
+  }
+];
+
+/* ---------- STAV ---------- */
+let cur = 0, score = 0, perfect = 0, wrong = 0;
+let startTime = 0, timerInt = null;
+let levelWrongUsed = {}; // zone->true pokud už chyboval v této zóně
+let playerName = "";
+
+const $ = id => document.getElementById(id);
+
+function startGame(){
+  playerName = ($("playerName").value || "Hráč").trim().slice(0,20);
+  $("startScreen").classList.add("hidden");
+  $("gameScreen").classList.remove("hidden");
+  $("hud").classList.remove("hidden");
+  startTime = Date.now();
+  timerInt = setInterval(updateTimer, 500);
+  buildProgress();
+  loadLevel();
+}
+
+function updateTimer(){
+  const s = Math.floor((Date.now()-startTime)/1000);
+  $("hudTime").textContent = fmt(s);
+}
+function fmt(s){ return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+
+function buildProgress(){
+  const p = $("progress"); p.innerHTML="";
+  LEVELS.forEach((_,i)=>{
+    const d=document.createElement("div");
+    d.className="dot"+(i<cur?" done":i===cur?" cur":"");
+    p.appendChild(d);
+  });
+}
+
+function loadLevel(){
+  const L = LEVELS[cur];
+  levelWrongUsed = {};
+  $("levelTitle").textContent = L.title;
+  $("levelHint").textContent = L.hint;
+  $("hudLevel").textContent = (cur+1)+"/"+LEVELS.length;
+  buildProgress();
+
+  // zones
+  const zc = $("zones"); zc.innerHTML="";
+  L.zones.forEach(z=>{
+    const el=document.createElement("div");
+    el.className="zone"; el.dataset.answer=z.answer;
+    el.innerHTML=`<div class="zlabel"><div class="zname">${z.name}</div><div class="zdesc">${z.desc}</div></div><div class="slot" data-slot>?</div>`;
+    zc.appendChild(el);
+  });
+
+  // chips (zamíchat)
+  const bank = $("bank"); bank.innerHTML="";
+  shuffle(L.chips.slice()).forEach(c=>{
+    const el=document.createElement("div");
+    el.className="chip"; el.dataset.id=c.id;
+    el.innerHTML=`<span class="ico">${c.ico}</span>${c.label}`;
+    bank.appendChild(el);
+    attachDrag(el);
+  });
+
+  $("nextBtn").disabled = true;
+  $("nextBtn").textContent = (cur===LEVELS.length-1) ? "Dokončit hru 🏁" : "Další úroveň →";
+}
+
+/* ---------- DRAG & DROP (touch + myš) ---------- */
+let ghost=null, dragEl=null, dragData=null;
+
+function attachDrag(el){
+  el.addEventListener("pointerdown", onDown);
+}
+
+function onDown(e){
+  if(this.classList.contains("placed")) return;
+  e.preventDefault();
+  dragEl = this;
+  dragData = this.dataset.id;
+  this.classList.add("dragging");
+  ghost = document.createElement("div");
+  ghost.className="drag-ghost";
+  ghost.innerHTML = this.innerHTML;
+  $("ghostLayer").appendChild(ghost);
+  moveGhost(e.clientX, e.clientY);
+  document.addEventListener("pointermove", onMove);
+  document.addEventListener("pointerup", onUp);
+}
+
+function moveGhost(x,y){ if(ghost){ghost.style.left=x+"px";ghost.style.top=y+"px";} }
+
+function onMove(e){
+  e.preventDefault();
+  moveGhost(e.clientX, e.clientY);
+  const z = zoneAt(e.clientX, e.clientY);
+  document.querySelectorAll(".zone").forEach(el=>el.classList.remove("over"));
+  if(z && !z.classList.contains("correct")) z.classList.add("over");
+}
+
+function zoneAt(x,y){
+  const els = document.elementsFromPoint(x,y);
+  for(const el of els){ if(el.classList && el.classList.contains("zone")) return el; }
+  return null;
+}
+
+function onUp(e){
+  document.removeEventListener("pointermove", onMove);
+  document.removeEventListener("pointerup", onUp);
+  const z = zoneAt(e.clientX, e.clientY);
+  document.querySelectorAll(".zone").forEach(el=>el.classList.remove("over"));
+  if(ghost){ ghost.remove(); ghost=null; }
+  if(dragEl) dragEl.classList.remove("dragging");
+
+  if(z && !z.classList.contains("correct")){
+    if(z.dataset.answer === dragData){
+      // správně
+      z.classList.add("filled","correct");
+      z.querySelector("[data-slot]").innerHTML = dragEl.innerHTML;
+      dragEl.classList.add("placed");
+      const zid = z.dataset.answer;
+      if(!levelWrongUsed[zid]){ perfect++; }
+      score += 10; flash("✅ Správně! +10", "good");
+      checkDone();
+    } else {
+      // špatně
+      wrong++; score = Math.max(0, score-3);
+      levelWrongUsed[z.dataset.answer] = true;
+      flash("❌ Sem to nepatří. −3", "bad");
+    }
+    updateHud();
+  }
+  dragEl=null; dragData=null;
+}
+
+function checkDone(){
+  const all = document.querySelectorAll(".zone").length;
+  const done = document.querySelectorAll(".zone.correct").length;
+  if(done===all){
+    $("nextBtn").disabled = false;
+    flash("🎉 Úroveň hotová!", "good");
+  }
+}
+
+function nextLevel(){
+  if(cur < LEVELS.length-1){ cur++; loadLevel(); window.scrollTo(0,0); }
+  else endGame();
+}
+
+function endGame(){
+  clearInterval(timerInt);
+  const total = Math.floor((Date.now()-startTime)/1000);
+  $("gameScreen").classList.add("hidden");
+  $("hud").classList.add("hidden");
+  $("endScreen").classList.remove("hidden");
+  $("endName").textContent = playerName + ", tady je tvůj výsledek:";
+  $("finalScore").textContent = score;
+  $("finalTime").textContent = fmt(total);
+  $("finalPerfect").textContent = perfect + "/" + LEVELS.reduce((a,l)=>a+l.zones.length,0);
+  $("finalWrong").textContent = wrong;
+  $("finalCode").textContent = makeCode(total);
+}
+
+// kód pro žebříček: SKÓRE-ČAS zakódované, aby šlo ověřit
+function makeCode(total){
+  const s = String(score).padStart(3,"0");
+  const t = String(total).padStart(3,"0");
+  const check = (score*7 + total*3 + perfect) % 100;
+  return s+"-"+t+"-"+String(check).padStart(2,"0");
+}
+
+function updateHud(){ $("hudScore").textContent = score; }
+
+function flash(msg,type){
+  const t=$("toast"); t.textContent=msg;
+  t.className="toast show "+(type||"");
+  clearTimeout(t._to);
+  t._to=setTimeout(()=>t.className="toast",1100);
+}
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+</script>
+</body>
+</html>

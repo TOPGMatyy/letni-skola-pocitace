@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Návod: nauč se assembly krok za krokem</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    --bg:#0b1220;--card:#131f36;--card2:#1c2c4a;--line:#2a3c5e;
+    --cyan:#38bdf8;--good:#22c55e;--bad:#ef4444;--amber:#fbbf24;--purple:#a78bfa;
+    --text:#e6edf7;--muted:#93a4bd;
+  }
+  html,body{margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:radial-gradient(circle at 50% -10%,#16233f,#0b1220 60%);color:var(--text);
+    line-height:1.6;min-height:100vh;}
+  .wrap{max-width:760px;margin:0 auto;padding:16px 14px 70px;}
+  .mono{font-family:"SF Mono",Menlo,Consolas,monospace;}
+
+  header{text-align:center;padding:14px 0 6px;}
+  header h1{font-size:24px;margin:6px 0 4px;}
+  header p{color:var(--muted);font-size:14px;margin:0;}
+
+  .toc{background:var(--card);border-radius:12px;padding:12px 16px;margin:16px 0;font-size:14px;}
+  .toc b{color:var(--cyan);display:block;margin-bottom:6px;}
+  .toc a{color:var(--text);text-decoration:none;display:block;padding:3px 0;border-bottom:1px solid var(--line);}
+  .toc a:last-child{border:none;}
+  .toc a span{color:var(--amber);font-weight:700;margin-right:8px;}
+
+  section{background:var(--card);border-radius:16px;padding:18px 18px 20px;margin-bottom:16px;}
+  h2{font-size:20px;margin:2px 0 10px;color:#fff;}
+  h2 .num{color:var(--cyan);font-weight:800;margin-right:8px;}
+  h3{font-size:15px;color:var(--amber);margin:16px 0 6px;}
+  p{margin:8px 0;}
+  .lead{color:var(--muted);}
+  code{background:#0a1120;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:.92em;color:#cfe3ff;}
+  .k{color:var(--purple);font-weight:700;}
+  .analogy{background:#12233d;border-left:3px solid var(--cyan);border-radius:0 10px 10px 0;padding:10px 14px;margin:12px 0;font-size:14px;}
+  .analogy b{color:var(--cyan);}
+  .warn{background:#3a2a12;border-left:3px solid var(--amber);border-radius:0 10px 10px 0;padding:10px 14px;margin:12px 0;font-size:14px;}
+  .warn b{color:var(--amber);}
+
+  .ex{background:#0a1120;border:1px solid var(--line);border-radius:12px;padding:12px;margin:12px 0;}
+  .ex .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+  .ex textarea{width:100%;background:#060c16;color:#d6e4ff;border:1px solid var(--line);border-radius:8px;
+    padding:9px;font-family:"SF Mono",Menlo,Consolas,monospace;font-size:13.5px;line-height:1.5;resize:vertical;}
+  .ex .row{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;}
+  .ex button{border:none;border-radius:9px;padding:9px 16px;font-weight:700;font-size:14px;cursor:pointer;color:#04121f;background:linear-gradient(180deg,#86efac,#22c55e);}
+  .ex button:active{transform:translateY(1px);}
+  .ex .res{flex:1;min-width:180px;font-size:13.5px;color:var(--muted);}
+  .ex .res .chip{display:inline-block;background:var(--cyan);color:#04121f;font-weight:800;border-radius:6px;padding:2px 8px;margin:2px 3px;font-family:monospace;}
+  .ex .res .rg{color:var(--purple);font-family:monospace;}
+  .ex .res.err{color:#fecaca;}
+
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px;}
+  td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{color:var(--muted);font-weight:600;}
+  td:first-child{color:var(--amber);font-family:monospace;font-weight:700;white-space:nowrap;}
+
+  .task{background:#12233d;border-radius:10px;padding:10px 14px;margin:10px 0;font-size:14px;}
+  .task b{color:var(--good);}
+
+  .cta{background:linear-gradient(180deg,#134e2a,#0b1220);border:1px solid var(--good);border-radius:16px;padding:20px;text-align:center;}
+  .cta h2{margin-top:0;}
+  .cta .big{font-size:16px;}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div style="font-size:40px">🧠⚙️</div>
+    <h1>Jak naprogramovat procesor</h1>
+    <p>Návod krok za krokem — od prvního příkazu ke smyčkám a rozhodování</p>
+  </header>
+
+  <div class="toc">
+    <b>Co tě čeká</b>
+    <a href="#s1"><span>1</span> Co je procesor a jak přemýšlí</a>
+    <a href="#s2"><span>2</span> Registry, paměť a výstup</a>
+    <a href="#s3"><span>3</span> Tvůj první program</a>
+    <a href="#s4"><span>4</span> Počítání s čísly</a>
+    <a href="#s5"><span>5</span> Návěští a skoky</a>
+    <a href="#s6"><span>6</span> Smyčky (opakování)</a>
+    <a href="#s7"><span>7</span> Akumulátor: sčítání ve smyčce</a>
+    <a href="#s8"><span>8</span> Rozhodování (CMP a podmíněné skoky)</a>
+    <a href="#s9"><span>9</span> Práce s pamětí</a>
+    <a href="#s10"><span>10</span> Tahák + jdi hrát</a>
+  </div>
+
+  <section id="s1">
+    <h2><span class="num">1</span>Co je procesor a jak přemýšlí</h2>
+    <p class="lead">Procesor (CPU) je „mozek" počítače. Neumí nic chytrého sám od sebe — umí jen vykonávat <b>jednoduché příkazy (instrukce)</b>, a to <b>jeden po druhém, shora dolů</b>.</p>
+    <p>Program je prostě seznam instrukcí. Procesor si drží <span class="k">ukazatel</span> (anglicky <em>Program Counter, PC</em>) na tom, který řádek zrovna dělá. Když řádek dokončí, posune ukazatel na další. Celá kouzla — smyčky, rozhodování — jsou jen o tom, že tenhle ukazatel umíme přeskočit jinam.</p>
+    <div class="analogy"><b>Přirovnání:</b> Představ si kuchařský recept. Čteš krok 1, krok 2, krok 3… A občas tam je napsáno „pokud těsto není hotové, vrať se ke kroku 2". Přesně tak funguje procesor.</div>
+  </section>
+
+  <section id="s2">
+    <h2><span class="num">2</span>Registry, paměť a výstup</h2>
+    <p>Procesor si čísla někam ukládá. Máš tři místa:</p>
+    <h3>Registry: R0, R1, R2, R3</h3>
+    <p>Čtyři malé, <b>bleskurychlé</b> šuplíky, každý drží jedno číslo. Tady se odehrává skoro všechno počítání.</p>
+    <h3>Paměť: M0 až M7</h3>
+    <p>Osm dalších přihrádek, kam si můžeš čísla „odložit stranou" na později. Pomalejší než registry, ale je jich víc.</p>
+    <h3>Výstup</h3>
+    <p>Když chceš něco „ukázat na obrazovku", pošleš to příkazem <code>OUT</code>. To je jediné, co uvidíš jako výsledek.</p>
+    <div class="analogy"><b>Přirovnání:</b> Registry jsou jako čísla, co si držíš <b>v hlavě</b> (rychlé, ale je jich málo). Paměť je <b>papír na stole</b> — víc místa, ale musíš pro to „sáhnout".</div>
+  </section>
+
+  <section id="s3">
+    <h2><span class="num">3</span>Tvůj první program</h2>
+    <p>Dvě instrukce na začátek:</p>
+    <table>
+      <tr><td>SET R0, 42</td><td>vlož číslo <code>42</code> do registru <code>R0</code></td></tr>
+      <tr><td>OUT R0</td><td>vypiš hodnotu <code>R0</code> na výstup</td></tr>
+    </table>
+    <p>Poznámku za středníkem <code>;</code> procesor ignoruje — je jen pro tebe.</p>
+    <div class="ex" data-ex>
+      <div class="lbl">▶ Vyzkoušej (můžeš to i přepsat)</div>
+      <textarea rows="3">SET R0, 42
+OUT R0</textarea>
+      <div class="row"><button>▶ Spustit</button><div class="res">Klikni na Spustit…</div></div>
+    </div>
+    <div class="task">🎯 <b>Zkus sám:</b> změň program tak, aby vypsal tvůj věk. Pak přidej druhý řádek <code>OUT R0</code> — vypíše se dvakrát?</div>
+  </section>
+
+  <section id="s4">
+    <h2><span class="num">4</span>Počítání s čísly</h2>
+    <p>Procesor umí základní aritmetiku. Výsledek se vždycky uloží do <b>prvního</b> registru.</p>
+    <table>
+      <tr><td>ADD R0, R1</td><td>R0 = R0 + R1</td></tr>
+      <tr><td>SUB R0, R1</td><td>R0 = R0 − R1</td></tr>
+      <tr><td>INC R0</td><td>zvětši R0 o 1</td></tr>
+      <tr><td>DEC R0</td><td>zmenši R0 o 1</td></tr>
+      <tr><td>MOV R0, R1</td><td>zkopíruj R1 do R0</td></tr>
+    </table>
+    <p>Tip: místo registru můžeš u <code>ADD</code>/<code>SUB</code> napsat i přímo číslo, třeba <code>ADD R0, 10</code>.</p>
+    <div class="ex" data-ex>
+      <div class="lbl">▶ Sečti 8 + 5</div>
+      <textarea rows="4">SET R0, 8
+SET R1, 5
+ADD R0, R1
+OUT R0</textarea>
+      <div class="row"><button>▶ Spustit</button><div class="res">Klikni na Spustit…</div></div>
+    </div>
+    <div class="task">🎯 <b>Zkus sám:</b> spočítej <code>100 − 37</code> a vypiš výsledek.</div>
+  </section>
+
+  <section id="s5">
+    <h2><span class="num">5</span>Návěští a skoky</h2>
+    <p>Zatím program běžel jen shora dolů. <code>JMP</code> to změní — <b>přeskočí</b> ukazatel na jiné místo. Kam? Na <span class="k">návěští</span> — to je řádek, který končí dvojtečkou, třeba <code>start:</code>.</p>
+    <div class="ex" data-ex>
+      <div class="lbl">▶ Nekonečná smyčka — schválně (zastaví ji bezpečnostní limit)</div>
+      <textarea rows="4">SET R0, 1
+porad:
+INC R0
+JMP porad</textarea>
+      <div class="row"><button>▶ Spustit</button><div class="res">Klikni na Spustit…</div></div>
+    </div>
+    <div class="warn"><b>Pozor:</b> <code>JMP</code>, který skáče pořád dokola, vytvoří <b>nekonečnou smyčku</b>. Proto potřebujeme <b>podmíněné</b> skoky — skoč jen <em>někdy</em>. To je další kapitola.</div>
+  </section>
+
+  <section id="s6">
+    <h2><span class="num">6</span>Smyčky — opakuj, dokud…</h2>
+    <p>Procesor si po každém počítání pamatuje jednu věc: <b>byl výsledek nula?</b> Tomu se říká <span class="k">příznak nuly</span> (ZF). A na něj reagují dva skoky:</p>
+    <table>
+      <tr><td>JNZ návěští</td><td>skoč, když poslední výsledek <b>nebyl</b> nula (Jump if Not Zero)</td></tr>
+      <tr><td>JZ návěští</td><td>skoč, když poslední výsledek <b>byl</b> nula</td></tr>
+    </table>
+    <p>Klasická smyčka: dej si do registru počítadlo, na konci ho sniž přes <code>DEC</code> a použij <code>JNZ</code> — smyčka běží, dokud počítadlo nedojde na nulu.</p>
+    <div class="ex" data-ex>
+      <div class="lbl">▶ Odpočet 5, 4, 3, 2, 1</div>
+      <textarea rows="5">SET R0, 5
+loop:
+OUT R0
+DEC R0
+JNZ loop</textarea>
+      <div class="row"><button>▶ Spustit</button><div class="res">Klikni na Spustit…</div></div>
+    </div>
+    <p class="lead">Projdi si to v hlavě: R0 je 5 → vypíše, sníží na 4, není nula → skočí zpět… až R0 klesne na 0, <code>JNZ</code> už neskočí a program končí.</p>
+    <div class="task">🎯 <b>Zkus sám:</b> uprav program tak, aby počítal od <code>10</code> dolů.</div>
+  </section>
+
+  <section id="s7">
+    <h2><span class="num">7</span>Akumulátor: sčítání ve smyčce</h2>
+    <p>Nejsilnější trik: jeden registr necháš jako <b>„hromádku" (součet)</b> a ve smyčce do něj přičítáš. Takhle sečteš třeba <code>1+2+3+4+5</code> bez toho, abys to psal ručně.</p>
+    <div class="ex" data-ex>
+      <div class="lbl">▶ Součet 1 až 5 (má vyjít 15)</div>
+      <textarea rows="7">SET R0, 0     ; hromádka (součet)
+SET R1, 5     ; počítadlo
+loop:
+ADD R0, R1
+DEC R1
+JNZ loop
+OUT R0</textarea>
+      <div class="row"><button>▶ Spustit</button><div class="res">Klikni na Spustit…</div></div>
+    </div>
+    <div class="analogy"><b>Stejný nápad</b> = násobení! <code>6 × 4</code> je „přičti šestku čtyřikrát". Zkus to: R0 součet, R1 = 6, R2 = 4, ve smyčce <code>ADD R0, R1</code> a <code>DEC R2</code>.</div>
+    <div class="task">🎯 <b>Zkus sám:</b> uprav horní program na součet 1 až 10.</div>
+  </section>
+
+  <section id="s8">
+    <h2><span class="num">8</span>Rozhodování — porovnávání</h2>
+    <p>Chceš, aby se program zachoval různě podle hodnot? Nejdřív dvě čísla <b>porovnej</b> pomocí <code>CMP</code>, a pak podle výsledku skoč.</p>
+    <table>
+      <tr><td>CMP R0, R1</td><td>porovná R0 a R1 a zapamatuje si výsledek (=, &gt;, &lt;)</td></tr>
+      <tr><td>JG návěští</td><td>skoč, když bylo R0 <b>&gt;</b> R1 (Jump if Greater)</td></tr>
+      <tr><td>JL návěští</td><td>skoč, když bylo R0 <b>&lt;</b> R1 (Jump if Less)</td></tr>
+      <tr><td>JZ / JE</td><td>skoč, když se <b>rovnaly</b></td></tr>
+      <tr><td>HALT</td><td>zastav program (aby nepokračoval, kam nemá)</td></tr>
+    </table>
+    <div class="ex" data-ex>
+      <div class="lbl">▶ Vypiš větší ze dvou čísel</div>
+      <textarea rows="8">SET R0, 13
+SET R1, 27
+CMP R0, R1
+JL vetsi     ; když R0 < R1, skoč vypsat R1
+OUT R0
+HALT
+vetsi:
+OUT R1</textarea>
+      <div class="row"><button>▶ Spustit</button><div class="res">Klikni na Spustit…</div></div>
+    </div>
+    <div class="warn"><b>Proč tam je HALT?</b> Bez něj by program po vypsání R0 pokračoval dál a vypsal i R1. <code>HALT</code> ho zastaví ve správný moment.</div>
+    <div class="task">🎯 <b>Zkus sám:</b> změň čísla tak, aby bylo větší R0. Vypíše program pořád to správné?</div>
+  </section>
+
+  <section id="s9">
+    <h2><span class="num">9</span>Práce s pamětí</h2>
+    <p>Když ti dojdou registry, odlož si čísla do paměti <code>M0</code>–<code>M7</code> a později je načti zpět.</p>
+    <table>
+      <tr><td>STORE R0, M0</td><td>ulož hodnotu R0 do paměti M0</td></tr>
+      <tr><td>LOAD R1, M0</td><td>načti číslo z paměti M0 do R1</td></tr>
+    </table>
+    <div class="ex" data-ex>
+      <div class="lbl">▶ Ulož 10 a 20, načti a sečti (má vyjít 30)</div>
+      <textarea rows="8">SET R0, 10
+STORE R0, M0
+SET R0, 20
+STORE R0, M1
+LOAD R1, M0
+LOAD R2, M1
+ADD R1, R2
+OUT R1</textarea>
+      <div class="row"><button>▶ Spustit</button><div class="res">Klikni na Spustit…</div></div>
+    </div>
+  </section>
+
+  <section id="s10" class="cta">
+    <h2>🏁 Umíš to! Jdi hrát</h2>
+    <p class="big">Teď znáš všechno, co potřebuješ na <b>všech 8 úrovní</b> hry Mini-procesor — včetně bonusového Fibonacciho (spojíš akumulátor + smyčku + <code>MOV</code>).</p>
+    <p class="lead">Otevři vedle tenhle návod a hru a zkoušej. Když se zasekneš, vrať se sem k příslušné kapitole.</p>
+  </section>
+
+  <section>
+    <h2>📎 Tahák — všechny instrukce</h2>
+    <table>
+      <tr><th>Instrukce</th><th>Co dělá</th></tr>
+      <tr><td>SET R, n</td><td>vlož číslo n do registru</td></tr>
+      <tr><td>MOV R, R2</td><td>zkopíruj R2 do R</td></tr>
+      <tr><td>ADD R, R2</td><td>R = R + R2</td></tr>
+      <tr><td>SUB R, R2</td><td>R = R − R2</td></tr>
+      <tr><td>INC R / DEC R</td><td>+1 / −1</td></tr>
+      <tr><td>CMP R, R2</td><td>porovnej (nastaví =, &gt;, &lt;)</td></tr>
+      <tr><td>JMP l</td><td>skoč vždy na návěští l</td></tr>
+      <tr><td>JZ / JNZ l</td><td>skoč, když poslední výsledek byl / nebyl nula</td></tr>
+      <tr><td>JG / JL l</td><td>skoč, když R &gt; R2 / R &lt; R2 (po CMP)</td></tr>
+      <tr><td>LOAD R, Mn</td><td>načti z paměti do R</td></tr>
+      <tr><td>STORE R, Mn</td><td>ulož R do paměti</td></tr>
+      <tr><td>OUT R</td><td>vypiš hodnotu</td></tr>
+      <tr><td>HALT</td><td>zastav</td></tr>
+      <tr><td>navesti:</td><td>značka pro skok</td></tr>
+      <tr><td>; text</td><td>poznámka (procesor ji ignoruje)</td></tr>
+    </table>
+  </section>
+
+  <footer>Mini-procesor · výukový návod k assembly · vytvořeno pro letní školu</footer>
+</div>
+
+<script>
+/* ===== stejný procesor jako ve hře (ověřený) ===== */
+const LIMIT=20000;
+function parse(src){
+  const lines=src.split('\n');const prog=[];const labels={};
+  lines.forEach((raw,li)=>{
+    let s=raw.replace(/[;#].*$/,'').replace(/\/\/.*$/,'').trim(); if(!s)return;
+    const lm=s.match(/^([A-Za-z_]\w*):$/); if(lm){labels[lm[1].toLowerCase()]=prog.length;return;}
+    const m=s.match(/^(\w+)\s*(.*)$/); if(!m)throw{line:li+1,msg:'nerozumím: '+raw.trim()};
+    const args=m[2].trim()===''?[]:m[2].split(',').map(a=>a.trim());
+    prog.push({op:m[1].toUpperCase(),args,line:li+1});
+  });
+  return {prog,labels};
+}
+function newState(){return {R0:0,R1:0,R2:0,R3:0,mem:new Array(8).fill(0),ZF:false,GF:false,LF:false,pc:0,steps:0,out:[],halted:false,prog:null,labels:null,lastLine:null};}
+const isReg=t=>/^R[0-3]$/i.test(t), isMem=t=>/^M[0-7]$/i.test(t);
+const rn=t=>t.toUpperCase(), mi=t=>parseInt(t.slice(1));
+function val(st,t){ if(isReg(t))return st[rn(t)]; if(isMem(t))return st.mem[mi(t)]; const n=parseInt(t,10); if(isNaN(n))throw{line:st.lastLine,msg:'neznámý operand: '+t}; return n; }
+const setZ=(st,v)=>{st.ZF=(v===0);};
+function exec(st,ins){
+  st.lastLine=ins.line; const a=ins.args[0],b=ins.args[1];
+  const need=n=>{if(ins.args.length<n)throw{line:ins.line,msg:ins.op+' potřebuje víc operandů'};};
+  const jmp=l=>{if(!(l&&l.toLowerCase() in st.labels))throw{line:ins.line,msg:'neznámé návěští: '+l};st.pc=st.labels[l.toLowerCase()];};
+  switch(ins.op){
+    case 'SET':need(2);if(!isReg(a))throw{line:ins.line,msg:'SET cíl musí být registr'};st[rn(a)]=val(st,b);return false;
+    case 'MOV':need(2);st[rn(a)]=val(st,b);return false;
+    case 'ADD':need(2);st[rn(a)]=st[rn(a)]+val(st,b);setZ(st,st[rn(a)]);return false;
+    case 'SUB':need(2);st[rn(a)]=st[rn(a)]-val(st,b);setZ(st,st[rn(a)]);return false;
+    case 'INC':need(1);st[rn(a)]++;setZ(st,st[rn(a)]);return false;
+    case 'DEC':need(1);st[rn(a)]--;setZ(st,st[rn(a)]);return false;
+    case 'CMP':need(2);{const d=val(st,a)-val(st,b);st.ZF=(d===0);st.GF=(d>0);st.LF=(d<0);}return false;
+    case 'LOAD':need(2);if(!isMem(b))throw{line:ins.line,msg:'LOAD: druhý operand musí být M0–M7'};st[rn(a)]=st.mem[mi(b)];return false;
+    case 'STORE':need(2);if(!isMem(b))throw{line:ins.line,msg:'STORE: druhý operand musí být M0–M7'};st.mem[mi(b)]=val(st,a);return false;
+    case 'OUT':need(1);st.out.push(val(st,a));return false;
+    case 'JMP':need(1);jmp(a);return true;
+    case 'JZ':case 'JE':need(1);if(st.ZF){jmp(a);return true;}return false;
+    case 'JNZ':case 'JNE':need(1);if(!st.ZF){jmp(a);return true;}return false;
+    case 'JG':need(1);if(st.GF){jmp(a);return true;}return false;
+    case 'JL':need(1);if(st.LF){jmp(a);return true;}return false;
+    case 'HALT':st.halted=true;return false;
+    default:throw{line:ins.line,msg:'neznámá instrukce: '+ins.op};
+  }
+}
+function runCode(src){
+  const st=newState();const P=parse(src);st.prog=P.prog;st.labels=P.labels;
+  while(st.pc<st.prog.length&&!st.halted&&st.steps<LIMIT){const ins=st.prog[st.pc];const j=exec(st,ins);if(!j)st.pc++;st.steps++;}
+  return {st,limit:st.steps>=LIMIT};
+}
+
+/* ===== napojení tlačítek ===== */
+document.querySelectorAll('[data-ex]').forEach(ex=>{
+  const ta=ex.querySelector('textarea');
+  const btn=ex.querySelector('button');
+  const res=ex.querySelector('.res');
+  btn.addEventListener('click',()=>{
+    try{
+      const {st,limit}=runCode(ta.value);
+      let html='';
+      if(limit) html+='<span style="color:#fbbf24">⏱ zastaveno limitem (nekonečná smyčka)</span><br>';
+      html+='Výstup: '+(st.out.length?st.out.map(v=>'<span class="chip">'+v+'</span>').join(''):'<span style="color:#93a4bd">(prázdný)</span>');
+      html+='<br><span class="rg">R0='+st.R0+' R1='+st.R1+' R2='+st.R2+' R3='+st.R3+'</span>';
+      res.className='res'; res.innerHTML=html;
+    }catch(e){
+      res.className='res err'; res.innerHTML='⚠️ Chyba'+(e.line?' na řádku '+e.line:'')+': '+(e.msg||e);
+    }
+  });
+});
+</script>
+</body>
+</html>
