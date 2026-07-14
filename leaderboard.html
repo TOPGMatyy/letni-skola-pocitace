@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Žebříček – Letní škola</title>
+<style>
+  *{box-sizing:border-box;}
+  :root{
+    --bg:#0b1220;--card:#131f36;--card2:#1c2c4a;--line:#2a3c5e;
+    --cyan:#38bdf8;--good:#22c55e;--amber:#fbbf24;--text:#e8eef8;--muted:#93a4bd;
+    --gold:#fcd34d;--silver:#cbd5e1;--bronze:#d8935b;
+  }
+  html,body{margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:radial-gradient(circle at 50% -10%,#16233f,#0b1220 60%);color:var(--text);min-height:100vh;}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px 16px 50px;}
+  header{text-align:center;padding:8px 0 4px;}
+  header h1{font-size:30px;margin:6px 0 2px;}
+  header .st{color:var(--muted);font-size:14px;}
+  header .st b{color:var(--good);}
+  .live{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);margin-right:6px;animation:pulse 1.5s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .cols{display:grid;grid-template-columns:1fr;gap:16px;margin-top:14px;}
+  @media(min-width:820px){.cols{grid-template-columns:1fr 1fr;}}
+  .board{background:var(--card);border-radius:16px;padding:16px 16px 18px;}
+  .board h2{margin:0 0 4px;font-size:20px;display:flex;align-items:center;gap:8px;}
+  .board .desc{color:var(--muted);font-size:13px;margin-bottom:12px;}
+  .badge{font-size:12px;background:var(--card2);color:var(--muted);border-radius:8px;padding:2px 8px;margin-left:auto;}
+  table{width:100%;border-collapse:collapse;}
+  th{text-align:left;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px;padding:6px 8px;border-bottom:1px solid var(--line);}
+  td{padding:9px 8px;border-bottom:1px solid var(--line);font-size:16px;}
+  tr:last-child td{border-bottom:none;}
+  .rank{width:44px;font-weight:800;color:var(--muted);text-align:center;}
+  .name{font-weight:700;}
+  .num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;}
+  .sub{color:var(--muted);font-size:12px;text-align:right;}
+  tr.top1 td{background:linear-gradient(90deg,rgba(252,211,77,.14),transparent);}
+  tr.top1 .rank{color:var(--gold);}
+  tr.top2 .rank{color:var(--silver);}
+  tr.top3 .rank{color:var(--bronze);}
+  .empty{color:var(--muted);text-align:center;padding:26px 0;font-size:15px;}
+  .done-pill{font-size:11px;background:#12351f;color:#bbf7d0;border:1px solid var(--good);border-radius:6px;padding:1px 6px;margin-left:6px;}
+  .controls{display:flex;justify-content:center;gap:10px;margin-top:16px;}
+  .btn{background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 16px;font-size:14px;font-weight:600;cursor:pointer;}
+  .btn:active{transform:translateY(1px);}
+  .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:18px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🏆 Žebříček – Letní škola</h1>
+    <div class="st"><span class="live"></span>Živě · <b id="count">0</b> hráčů · aktualizováno <span id="upd">—</span></div>
+  </header>
+
+  <div class="cols">
+    <div class="board">
+      <h2>🧮 Mini-procesor <span class="badge" id="cP">0</span></h2>
+      <div class="desc">Pořadí: víc vyřešených úrovní → méně instrukcí (elegantnější).</div>
+      <table><thead><tr><th class="rank">#</th><th>Jméno</th><th class="num">Úrovně</th><th class="num">Instrukce</th></tr></thead>
+        <tbody id="tP"></tbody></table>
+      <div class="empty" id="eP">Zatím nikdo nehrál. Až žák vyřeší úroveň, objeví se tu.</div>
+    </div>
+
+    <div class="board">
+      <h2>🖥️ Sestav počítač <span class="badge" id="cS">0</span></h2>
+      <div class="desc">Pořadí: víc bodů → kratší čas.</div>
+      <table><thead><tr><th class="rank">#</th><th>Jméno</th><th class="num">Body</th><th class="num">Čas</th></tr></thead>
+        <tbody id="tS"></tbody></table>
+      <div class="empty" id="eS">Zatím nikdo nedohrál. Výsledky se objeví po dokončení hry.</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" onclick="load()">↻ Obnovit teď</button>
+    <button class="btn" onclick="clearAll()">🗑 Vymazat žebříček</button>
+  </div>
+  <div class="foot">Stránka se sama obnovuje každých 5 sekund. Ideální promítnout na plátno.</div>
+</div>
+
+<script>
+const FB='https://letni-skola-hry-default-rtdb.firebaseio.com';
+const medal=['top1','top2','top3'];
+function fmtTime(s){ s=+s||0; return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
+function esc(x){ return String(x==null?'':x).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+
+async function load(){
+  let data={};
+  try{ data=await fetch(FB+'/scores.json?ts='+Date.now()).then(r=>r.json())||{}; }
+  catch(e){ document.getElementById('upd').textContent='chyba spojení'; return; }
+  const rows=Object.values(data||{}).filter(x=>x&&x.name);
+  const proc=rows.filter(x=>x.game==='procesor');
+  const sest=rows.filter(x=>x.game==='sestav');
+
+  // procesor: levels desc, instr asc
+  proc.sort((a,b)=> (b.levels-a.levels) || (a.instr-b.instr) || (a.ts-b.ts));
+  // sestav: score desc, time asc
+  sest.sort((a,b)=> (b.score-a.score) || (a.timeSec-b.timeSec) || (a.ts-b.ts));
+
+  renderProc(proc); renderSest(sest);
+  document.getElementById('count').textContent=rows.length;
+  document.getElementById('cP').textContent=proc.length;
+  document.getElementById('cS').textContent=sest.length;
+  document.getElementById('upd').textContent=new Date().toLocaleTimeString('cs-CZ');
+}
+
+function renderProc(list){
+  const tb=document.getElementById('tP'), e=document.getElementById('eP');
+  e.style.display=list.length?'none':'block';
+  tb.innerHTML=list.map((r,i)=>`<tr class="${medal[i]||''}">
+    <td class="rank">${i+1}</td>
+    <td class="name">${esc(r.name)}${r.done?'<span class="done-pill">hotovo</span>':''}</td>
+    <td class="num">${r.levels||0}/8</td>
+    <td class="num">${r.instr||0}</td></tr>`).join('');
+}
+function renderSest(list){
+  const tb=document.getElementById('tS'), e=document.getElementById('eS');
+  e.style.display=list.length?'none':'block';
+  tb.innerHTML=list.map((r,i)=>`<tr class="${medal[i]||''}">
+    <td class="rank">${i+1}</td>
+    <td class="name">${esc(r.name)}</td>
+    <td class="num">${r.score||0}</td>
+    <td class="num">${fmtTime(r.timeSec)}</td></tr>`).join('');
+}
+
+async function clearAll(){
+  if(!confirm('Opravdu vymazat celý žebříček? (nevratné)')) return;
+  try{ await fetch(FB+'/scores.json',{method:'DELETE'}); }catch(e){}
+  load();
+}
+
+load();
+setInterval(load, 5000);
+</script>
+</body>
+</html>

@@ -535,6 +535,16 @@ function endGame(){
   $("finalPerfect").textContent = perfect + "/" + LEVELS.reduce((a,l)=>a+l.zones.length,0);
   $("finalWrong").textContent = wrong;
   $("finalCode").textContent = makeCode(total);
+  submitScore(total);
+}
+
+/* ===== odeslání výsledku na živý žebříček ===== */
+const FB='https://letni-skola-hry-default-rtdb.firebaseio.com';
+const SID='s_'+Math.random().toString(36).slice(2,10);
+function submitScore(total){
+  fetch(FB+'/scores/'+SID+'.json',{method:'PUT',body:JSON.stringify(
+    {name:playerName, game:'sestav', score:score, timeSec:total, perfect:perfect, wrong:wrong, ts:Date.now()}
+  )}).catch(()=>{});
 }
 
 // kód pro žebříček: SKÓRE-ČAS zakódované, aby šlo ověřit

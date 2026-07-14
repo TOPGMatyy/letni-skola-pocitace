@@ -90,6 +90,8 @@
   <h1>🧮 Mini-procesor</h1>
   <div class="sub">Piš vlastní program v assembly · krokuj ho · sleduj, jak počítač myslí</div>
 
+  <input id="playerName" placeholder="Tvoje jméno / přezdívka (pro žebříček)" style="width:100%;max-width:820px;margin:0 auto 12px;display:block;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:15px">
+
   <div class="dots" id="dots"></div>
   <div class="done-banner" id="doneBanner"></div>
 
@@ -372,6 +374,19 @@ function resetRun(){ rt=null; clearResult(); paint(newState());
 
 function arrEq(a,b){ return a.length===b.length && a.every((v,i)=>v===b[i]); }
 
+/* ===== odeslání výsledku na živý žebříček ===== */
+const FB='https://letni-skola-hry-default-rtdb.firebaseio.com';
+const SID='p_'+Math.random().toString(36).slice(2,10);
+function submitProgress(done){
+  const name=(document.getElementById('playerName').value||'').trim().slice(0,24);
+  if(!name) return; // bez jména se na žebříček neposílá
+  const levels=solved.filter(Boolean).length;
+  const instr=usedInstr.reduce((a,b)=>a+b,0);
+  fetch(FB+'/scores/'+SID+'.json',{method:'PUT',body:JSON.stringify(
+    {name:name, game:'procesor', levels:levels, instr:instr, done:!!done, ts:Date.now()}
+  )}).catch(()=>{});
+}
+
 function check(st){
   const L=LEVELS[cur];
   const r=document.getElementById('result');
@@ -380,6 +395,7 @@ function check(st){
     r.innerHTML='✅ Správně! Výstup sedí. '+(cur<LEVELS.length-1?'<span class="link" onclick="nextLevel()">Další úroveň →</span>':'🎉 Dokončil jsi všechny úrovně!');
     if(!solved[cur]){ solved[cur]=true; usedInstr[cur]=st.prog.length; }
     renderDots();
+    submitProgress(solved.every(x=>x));
     if(solved.every(x=>x)) showDone();
   }else{
     r.className='result no';
