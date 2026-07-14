@@ -64,11 +64,11 @@
     </div>
 
     <div class="board">
-      <h2>🖥️ Sestav počítač <span class="badge" id="cS">0</span></h2>
-      <div class="desc">Pořadí: víc bodů → kratší čas.</div>
-      <table><thead><tr><th class="rank">#</th><th>Jméno</th><th class="num">Body</th><th class="num">Čas</th></tr></thead>
-        <tbody id="tS"></tbody></table>
-      <div class="empty" id="eS">Zatím nikdo nedohrál. Výsledky se objeví po dokončení hry.</div>
+      <h2>🚀 Mini-procesor: EXPERT <span class="badge" id="cX">0</span></h2>
+      <div class="desc">Těžší úlohy. Pořadí: víc úrovní → méně instrukcí.</div>
+      <table><thead><tr><th class="rank">#</th><th>Jméno</th><th class="num">Úrovně</th><th class="num">Instrukce</th></tr></thead>
+        <tbody id="tX"></tbody></table>
+      <div class="empty" id="eX">Zatím nikdo nehrál expert verzi.</div>
     </div>
   </div>
 
@@ -91,37 +91,28 @@ async function load(){
   catch(e){ document.getElementById('upd').textContent='chyba spojení'; return; }
   const rows=Object.values(data||{}).filter(x=>x&&x.name);
   const proc=rows.filter(x=>x.game==='procesor');
-  const sest=rows.filter(x=>x.game==='sestav');
+  const exp=rows.filter(x=>x.game==='expert');
 
-  // procesor: levels desc, instr asc
-  proc.sort((a,b)=> (b.levels-a.levels) || (a.instr-b.instr) || (a.ts-b.ts));
-  // sestav: score desc, time asc
-  sest.sort((a,b)=> (b.score-a.score) || (a.timeSec-b.timeSec) || (a.ts-b.ts));
+  // levels desc, instr asc
+  const byLevels=(a,b)=> (b.levels-a.levels) || (a.instr-b.instr) || (a.ts-b.ts);
+  proc.sort(byLevels);
+  exp.sort(byLevels);
 
-  renderProc(proc); renderSest(sest);
-  document.getElementById('count').textContent=rows.length;
+  renderBoard('tP','eP',proc); renderBoard('tX','eX',exp);
+  document.getElementById('count').textContent=proc.length+exp.length;
   document.getElementById('cP').textContent=proc.length;
-  document.getElementById('cS').textContent=sest.length;
+  document.getElementById('cX').textContent=exp.length;
   document.getElementById('upd').textContent=new Date().toLocaleTimeString('cs-CZ');
 }
 
-function renderProc(list){
-  const tb=document.getElementById('tP'), e=document.getElementById('eP');
+function renderBoard(tbId, eId, list){
+  const tb=document.getElementById(tbId), e=document.getElementById(eId);
   e.style.display=list.length?'none':'block';
   tb.innerHTML=list.map((r,i)=>`<tr class="${medal[i]||''}">
     <td class="rank">${i+1}</td>
     <td class="name">${esc(r.name)}${r.done?'<span class="done-pill">hotovo</span>':''}</td>
     <td class="num">${r.levels||0}/8</td>
     <td class="num">${r.instr||0}</td></tr>`).join('');
-}
-function renderSest(list){
-  const tb=document.getElementById('tS'), e=document.getElementById('eS');
-  e.style.display=list.length?'none':'block';
-  tb.innerHTML=list.map((r,i)=>`<tr class="${medal[i]||''}">
-    <td class="rank">${i+1}</td>
-    <td class="name">${esc(r.name)}</td>
-    <td class="num">${r.score||0}</td>
-    <td class="num">${fmtTime(r.timeSec)}</td></tr>`).join('');
 }
 
 async function clearAll(){
