@@ -338,6 +338,7 @@ function showCur(st){
 
 function run(){
   clearResult();
+  submitProgress(solved.every(x=>x)); // zaregistruj hráče hned při pokusu (i 0/8)
   let st;
   try{ st=initRuntime(); }catch(e){ return err(e); }
   try{
@@ -420,6 +421,14 @@ function showDone(){
   b.style.display='block';
   b.innerHTML='🏆 <b>Expert hotov! Zvládl jsi všech '+LEVELS.length+' úrovní.</b><br><span style="color:var(--muted);font-size:13px">Celkem instrukcí: '+total+' (méně = elegantnější řešení)</span><br>Kód pro učitele: <span class="code">'+code+'</span>';
 }
+
+// jméno se přenáší mezi hrami + uloží se, aby ho žák nemusel psát znovu
+(function(){
+  const inp=document.getElementById('playerName');
+  try{ const s=localStorage.getItem('ls_playerName'); if(s) inp.value=s; }catch(e){}
+  inp.addEventListener('input',()=>{ try{localStorage.setItem('ls_playerName',inp.value);}catch(e){}
+    if(inp.value.trim()) submitProgress(solved.every(x=>x)); });
+})();
 
 loadLevel();
 </script>

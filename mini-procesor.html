@@ -421,6 +421,13 @@ function showDone(){
   b.innerHTML='🏆 <b>Hotovo! Vyřešil jsi všech '+LEVELS.length+' úrovní.</b><br><span style="color:var(--muted);font-size:13px">Celkem instrukcí: '+total+' (méně = elegantnější řešení)</span><br>Kód pro učitele: <span class="code">'+code+'</span>';
 }
 
+// ulož jméno, ať se přenese i do expert verze (a naopak)
+(function(){
+  const inp=document.getElementById('playerName');
+  try{ const s=localStorage.getItem('ls_playerName'); if(s) inp.value=s; }catch(e){}
+  inp.addEventListener('input',()=>{ try{localStorage.setItem('ls_playerName',inp.value);}catch(e){} });
+})();
+
 loadLevel();
 </script>
 </body>
