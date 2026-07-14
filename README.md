@@ -1,0 +1,1 @@
+# letni-skola-pocitace
