@@ -78,6 +78,14 @@
         <tbody id="tL"></tbody></table>
       <div class="empty" id="eL">Zatím nikdo nestavěl z hradel.</div>
     </div>
+
+    <div class="board">
+      <h2>🔧 Diagnostika PC <span class="badge" id="cD">0</span></h2>
+      <div class="desc">Hledání závad. Pořadí: víc případů → méně chyb.</div>
+      <table><thead><tr><th class="rank">#</th><th>Jméno</th><th class="num">Případy</th><th class="num">Chyby</th></tr></thead>
+        <tbody id="tD"></tbody></table>
+      <div class="empty" id="eD">Zatím nikdo nediagnostikoval.</div>
+    </div>
   </div>
 
   <div class="controls">
@@ -101,17 +109,20 @@ async function load(){
   const proc=rows.filter(x=>x.game==='procesor');
   const exp=rows.filter(x=>x.game==='expert');
   const logic=rows.filter(x=>x.game==='logic');
+  const diag=rows.filter(x=>x.game==='diag');
 
   const by=(field)=>(a,b)=> (b.levels-a.levels) || ((a[field]||0)-(b[field]||0)) || (a.ts-b.ts);
-  proc.sort(by('instr')); exp.sort(by('instr')); logic.sort(by('gates'));
+  proc.sort(by('instr')); exp.sort(by('instr')); logic.sort(by('gates')); diag.sort(by('mistakes'));
 
   renderBoard('tP','eP',proc,'instr');
   renderBoard('tX','eX',exp,'instr');
   renderBoard('tL','eL',logic,'gates');
-  document.getElementById('count').textContent=proc.length+exp.length+logic.length;
+  renderBoard('tD','eD',diag,'mistakes');
+  document.getElementById('count').textContent=proc.length+exp.length+logic.length+diag.length;
   document.getElementById('cP').textContent=proc.length;
   document.getElementById('cX').textContent=exp.length;
   document.getElementById('cL').textContent=logic.length;
+  document.getElementById('cD').textContent=diag.length;
   document.getElementById('upd').textContent=new Date().toLocaleTimeString('cs-CZ');
 }
 

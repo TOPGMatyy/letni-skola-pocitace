@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagnostika PC – proč nenaběhl?</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    --bg:#0b1220;--card:#131f36;--card2:#1c2c4a;--line:#2a3c5e;
+    --cyan:#38bdf8;--good:#22c55e;--bad:#ef4444;--amber:#fbbf24;--purple:#a78bfa;
+    --text:#e2e8f0;--muted:#93a4bd;
+  }
+  html,body{margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:radial-gradient(circle at 50% -10%,#241536,#0b1220 70%);color:var(--text);min-height:100vh;}
+  .wrap{max-width:760px;margin:0 auto;padding:12px 12px 60px;}
+  h1{font-size:21px;margin:6px 0 2px;text-align:center;}
+  h1 .tag{background:var(--amber);color:#04121f;font-size:12px;font-weight:800;border-radius:6px;padding:2px 7px;vertical-align:middle;margin-left:6px;}
+  .sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:10px;}
+  .name{width:100%;display:block;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:15px;margin-bottom:10px;}
+
+  .dots{display:flex;gap:4px;justify-content:center;margin-bottom:8px;flex-wrap:wrap;}
+  .dots .d{width:22px;height:8px;border-radius:4px;background:#2a3c5e;}
+  .dots .d.done{background:var(--good);} .dots .d.cur{background:var(--amber);}
+
+  .case{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;}
+  .case .cn{display:inline-block;background:var(--amber);color:#04121f;font-weight:800;border-radius:8px;padding:2px 9px;font-size:13px;margin-bottom:8px;}
+  .case h2{font-size:19px;margin:2px 0 8px;}
+  .symptom{background:#0a1120;border-left:3px solid var(--bad);border-radius:0 10px 10px 0;padding:12px 14px;font-size:15px;line-height:1.5;}
+
+  h3{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px;}
+  .checks{display:flex;flex-direction:column;gap:8px;}
+  .check{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;font-size:14px;transition:background .12s;}
+  .check:hover{background:#25395c;}
+  .check.used{cursor:default;}
+  .check .q{font-weight:600;}
+  .check .clue{display:none;margin-top:6px;color:var(--cyan);font-size:13.5px;border-top:1px solid var(--line);padding-top:6px;}
+  .check.used .clue{display:block;}
+  .check.used .q::before{content:"🔍 ";}
+
+  .options{display:grid;grid-template-columns:1fr;gap:8px;}
+  @media(min-width:560px){.options{grid-template-columns:1fr 1fr;}}
+  .opt{background:linear-gradient(180deg,#26385a,#1a2740);border:1px solid #3d557f;border-radius:10px;padding:12px;cursor:pointer;font-weight:700;font-size:14px;color:#dbe7ff;text-align:left;}
+  .opt:hover{border-color:var(--cyan);}
+  .opt.correct{background:#12351f;border-color:var(--good);color:#bbf7d0;}
+  .opt.wrong{background:#3a1618;border-color:var(--bad);color:#fecaca;}
+  .opt[disabled]{cursor:default;opacity:.85;}
+
+  .verdict{margin-top:12px;border-radius:10px;padding:12px 14px;font-size:14px;display:none;line-height:1.5;}
+  .verdict.ok{display:block;background:#12351f;border:1px solid var(--good);color:#d7f7e0;}
+  .verdict.no{display:block;background:#3a1618;border:1px solid var(--bad);color:#fde2e2;}
+  .verdict .link{color:var(--cyan);cursor:pointer;text-decoration:underline;font-weight:700;}
+  .stat{text-align:center;color:var(--muted);font-size:12px;margin-top:6px;}
+
+  .done-banner{background:linear-gradient(180deg,#134e2a,#0b1220);border:1px solid var(--good);border-radius:14px;padding:16px;text-align:center;margin-bottom:12px;display:none;}
+  .done-banner .code{font-family:monospace;font-size:24px;font-weight:800;color:var(--amber);letter-spacing:2px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔧 Diagnostika PC <span class="tag">PROČ NENABĚHL?</span></h1>
+  <div class="sub">Počítač nefunguje. Prozkoumej příznaky, klikej na diagnostické kroky a urči vadnou součástku.</div>
+
+  <input id="playerName" class="name" placeholder="Tvoje jméno / přezdívka (pro žebříček)">
+  <div class="dots" id="dots"></div>
+  <div class="done-banner" id="doneBanner"></div>
+
+  <div class="case">
+    <span class="cn" id="cn">Případ 1</span>
+    <h2 id="title"></h2>
+    <div class="symptom" id="symptom"></div>
+
+    <h3>🔍 Diagnostické kroky (klikni – odhalíš stopu)</h3>
+    <div class="checks" id="checks"></div>
+
+    <h3>🩺 Moje diagnóza – co je vadné?</h3>
+    <div class="options" id="options"></div>
+
+    <div class="verdict" id="verdict"></div>
+    <div class="stat" id="stat"></div>
+  </div>
+</div>
+
+<script>
+/* ===================== PŘÍPADY ===================== */
+const CASES = [
+  { title:'Úplně mrtvý počítač',
+    symptom:'Stiskneš tlačítko power a… vůbec nic. Žádné světlo, žádný roztočený větrák, naprosté ticho.',
+    checks:[
+      {q:'Je zdroj (PSU) zapnutý vypínačem vzadu a v zásuvce?', clue:'Vypínač na zadní straně zdroje byl v poloze „0" (vypnuto).'},
+      {q:'Svítí nějaká kontrolka (LED) na základní desce?', clue:'Deska je úplně bez proudu – nesvítí nic.'},
+      {q:'Zkusíš vyměnit monitor za jiný?', clue:'Bez proudu to nedává smysl – tudy cesta nevede.'},
+    ],
+    options:['Napájení (zdroj / kabel / vypínač)','Vadná RAM','Grafická karta','Procesor'],
+    answer:0,
+    explain:'Když se neroztočí ani větráky a nesvítí nic, do PC neteče proud. Vždy začni u napájení: kabel v zásuvce, přepínač na zdroji a připojení k desce.' },
+
+  { title:'Větráky se točí, ale černá obrazovka a pípání',
+    symptom:'Větráky i světla naběhnou, ale obraz nikde. Ze základní desky se navíc ozývá opakované pípání.',
+    checks:[
+      {q:'Poslechni si POST pípání (beep kód)', clue:'Opakované krátké pípání – kód, který obvykle značí chybu paměti.'},
+      {q:'Vytáhni a znovu pořádně zasuň RAM (reseat)', clue:'Jeden modul RAM nebyl úplně doražený ve slotu (necvakl).'},
+      {q:'Zkontroluj kabel monitoru', clue:'Kabel je v pořádku, obraz ale stejně není.'},
+    ],
+    options:['Vadná / špatně zasunutá RAM','Zdroj','Disk (SSD)','Klávesnice'],
+    answer:0,
+    explain:'Deska pípáním (POST beep kódy) hlásí, kde je problém. Opakované pípání a černá obrazovka typicky znamená špatně zasunutou nebo vadnou paměť RAM.' },
+
+  { title:'Vše svítí, ale monitor hlásí „No signal"',
+    symptom:'Počítač se zapne, větráky i světla běží, žádné pípání. Monitor ale píše „No signal". V PC je dedikovaná grafická karta.',
+    checks:[
+      {q:'Kam přesně je zapojený kabel monitoru?', clue:'Je zastrčený do HDMI na základní desce – ne do grafické karty dole.'},
+      {q:'Svítí kontrolka na monitoru / je zapnutý?', clue:'Monitor je zapnutý a jen hledá signál.'},
+      {q:'Zkus reseat RAM', clue:'Nepomohlo – nesouvisí.'},
+    ],
+    options:['Kabel je ve špatném portu (deska místo grafiky)','Vadný procesor','Vadná RAM','Rozbitý monitor'],
+    answer:0,
+    explain:'Když máš dedikovanou grafickou kartu, monitor musí být zapojený do NÍ (porty dole), ne do portu základní desky. Jinak obraz nejde.' },
+
+  { title:'Zapne a hned zhasne – a je horký',
+    symptom:'Po zapnutí PC naskočí na dvě vteřiny a zase se vypne. Pořád dokola. Chladič procesoru je na dotek horký.',
+    checks:[
+      {q:'Točí se větráček na chladiči CPU?', clue:'Netočí se – konektor chladiče není zapojený v desce (piny CPU_FAN).'},
+      {q:'Jaká je teplota CPU?', clue:'Vyskočila okamžitě přes 90 °C.'},
+      {q:'Zkontroluj RAM', clue:'RAM je v pořádku.'},
+    ],
+    options:['Chlazení CPU (nezapojený / nedosedající chladič)','Zdroj','Grafická karta','Disk'],
+    answer:0,
+    explain:'Moderní procesor se při přehřátí okamžitě vypne (ochrana). Nezapojený nebo špatně dosedající chladič způsobí přesně tohle – boot loop a vysoké teploty.' },
+
+  { title:'Naběhne, ale „No bootable device"',
+    symptom:'Počítač normálně naběhne, projde POSTem, ale místo systému hlásí „No bootable device – Insert boot media".',
+    checks:[
+      {q:'Je disk vidět v BIOSu?', clue:'SSD se v BIOSu vůbec neobjevuje.'},
+      {q:'Zkontroluj datový (SATA) a napájecí kabel disku', clue:'Datový kabel SSD byl odpojený.'},
+      {q:'Zkus reseat grafické karty', clue:'S bootováním systému nesouvisí.'},
+    ],
+    options:['Úložiště (odpojený / vadný disk)','RAM','Zdroj','Chlazení'],
+    answer:0,
+    explain:'Když hardware naběhne, ale nenajde systém, problém je v úložišti – odpojený kabel disku, vadný disk nebo špatné pořadí bootování v BIOSu.' },
+
+  { title:'Vypíná se jen ve hrách',
+    symptom:'V kanceláři a na internetu funguje bezvadně. Jakmile ale spustíš náročnou hru, po pár minutách se celý počítač náhle vypne.',
+    checks:[
+      {q:'Kdy přesně k vypnutí dochází?', clue:'Jen při vysoké zátěži grafiky – hry, rendering.'},
+      {q:'Kolik wattů má zdroj (PSU)?', clue:'Zdroj má jen 350 W; samotná grafika si ve špičce řekne o hodně víc.'},
+      {q:'Jaké jsou teploty CPU?', clue:'Teploty procesoru jsou úplně v pohodě.'},
+    ],
+    options:['Slabý zdroj (poddimenzovaný PSU)','Vadná klávesnice','Málo RAM','Rozbitý monitor'],
+    answer:0,
+    explain:'Náhlé vypnutí jen pod zátěží často znamená poddimenzovaný zdroj. Ve špičce nedodá dost proudu a ochrana PC vypne. Řešení: silnější zdroj.' },
+
+  { title:'Deska má proud, ale nejde zapnout',
+    symptom:'Po stisku tlačítka se nic neděje. Na základní desce ale svítí zelená LED a zdroj je prokazatelně zapnutý.',
+    checks:[
+      {q:'Přemosti na desce piny power switch (nebo zkontroluj zapojení předního panelu)', clue:'Po přemostění pinů PWR počítač naskočí – takže tlačítko/kabel předního panelu je špatně zapojený.'},
+      {q:'Je zdroj zapnutý a deska pod proudem?', clue:'Ano, LED na desce svítí – proud tam je.'},
+      {q:'Zkus reseat RAM', clue:'Nepomohlo.'},
+    ],
+    options:['Přední panel / power tlačítko (špatné zapojení)','Vadná grafika','Vadný disk','Přehřátý CPU'],
+    answer:0,
+    explain:'Deska má proud (svítí LED), ale nereaguje na tlačítko → chyba je v zapojení předního panelu (piny PWR_SW) nebo v samotném tlačítku skříně.' },
+
+  { title:'FINÁLE: Zapomíná čas a nastavení',
+    symptom:'Počítač funguje, ale po každém odpojení ze zásuvky zapomene datum a čas a nastavení v BIOSu se vrátí do výchozího stavu.',
+    checks:[
+      {q:'Co přesně se resetuje?', clue:'Datum, čas a pořadí bootování se pokaždé smažou.'},
+      {q:'Zkontroluj knoflíkovou baterii na desce (CMOS)', clue:'Baterie CR2032 je vybitá (naměřeno 0,1 V).'},
+      {q:'Zkus reseat RAM', clue:'S resetem nastavení nesouvisí.'},
+    ],
+    options:['Vybitá CMOS baterie (CR2032)','Vadná RAM','Slabý zdroj','Vadný disk'],
+    answer:0,
+    explain:'Malá knoflíková baterie na desce drží čas a nastavení BIOSu i při vypnutém PC. Když je vybitá, nastavení se po odpojení pokaždé resetuje. Vymění se za novou CR2032.' },
+];
+
+/* ===================== STAV ===================== */
+let cur=0;
+let solved=new Array(CASES.length).fill(false);
+let mistakes=0;
+let answered=false;
+const $=id=>document.getElementById(id);
+
+function load(){
+  const C=CASES[cur]; answered=false;
+  $('cn').textContent='Případ '+(cur+1)+' / '+CASES.length;
+  $('title').textContent=C.title;
+  $('symptom').textContent=C.symptom;
+  $('verdict').className='verdict'; $('verdict').innerHTML='';
+  $('stat').textContent='';
+  renderDots();
+  const ch=$('checks'); ch.innerHTML='';
+  C.checks.forEach((c,i)=>{ const el=document.createElement('div'); el.className='check';
+    el.innerHTML='<div class="q">'+c.q+'</div><div class="clue">'+c.clue+'</div>';
+    el.addEventListener('click',()=>{ el.classList.add('used'); });
+    ch.appendChild(el); });
+  const op=$('options'); op.innerHTML='';
+  C.options.forEach((o,i)=>{ const b=document.createElement('button'); b.className='opt'; b.textContent=o;
+    b.addEventListener('click',()=>choose(i,b)); op.appendChild(b); });
+}
+
+function renderDots(){ const d=$('dots'); d.innerHTML='';
+  CASES.forEach((_,i)=>{ const e=document.createElement('div'); e.className='d'+(solved[i]?' done':i===cur?' cur':''); d.appendChild(e); }); }
+
+function choose(i,btn){
+  if(answered) return;
+  const C=CASES[cur];
+  if(i===C.answer){
+    answered=true;
+    btn.classList.add('correct');
+    [...$('options').children].forEach(b=>b.disabled=true);
+    if(!solved[cur]) solved[cur]=true;
+    const v=$('verdict'); v.className='verdict ok';
+    v.innerHTML='✅ <b>Správně!</b> '+C.explain+'<br><br>'+
+      (cur<CASES.length-1?'<span class="link" onclick="next()">Další případ →</span>':'🎉 Vyřešil jsi všechny případy!');
+    renderDots(); submitProgress(solved.every(x=>x));
+    if(solved.every(x=>x)) showDone();
+  }else{
+    mistakes++;
+    btn.classList.add('wrong'); btn.disabled=true;
+    const v=$('verdict'); v.className='verdict no';
+    v.innerHTML='❌ To není ono. Zkus víc diagnostických kroků a hádej znovu.';
+    $('stat').textContent='Chybné pokusy celkem: '+mistakes;
+  }
+}
+
+function next(){ if(cur<CASES.length-1){ cur++; load(); window.scrollTo(0,0);} }
+
+function showDone(){
+  const code='DIA-'+String(CASES.length).padStart(2,'0')+'-'+String(mistakes).padStart(3,'0');
+  const b=$('doneBanner'); b.style.display='block';
+  b.innerHTML='🏆 <b>Hotovo! Vyřešil jsi všech '+CASES.length+' případů.</b><br><span style="color:var(--muted);font-size:13px">Chybných pokusů: '+mistakes+' (méně = lepší technik)</span><br>Kód pro učitele: <span class="code">'+code+'</span>';
+}
+
+/* ===================== ŽEBŘÍČEK ===================== */
+const FB='https://letni-skola-hry-default-rtdb.firebaseio.com';
+const SID='d_'+Math.random().toString(36).slice(2,10);
+function submitProgress(done){
+  const name=($('playerName').value||'').trim().slice(0,24); if(!name) return;
+  const levels=solved.filter(Boolean).length;
+  fetch(FB+'/scores/'+SID+'.json',{method:'PUT',body:JSON.stringify(
+    {name, game:'diag', levels, mistakes, done:!!done, ts:Date.now()})}).catch(()=>{});
+}
+(function(){ const inp=$('playerName');
+  try{ const s=localStorage.getItem('ls_playerName'); if(s) inp.value=s; }catch(e){}
+  inp.addEventListener('input',()=>{ try{localStorage.setItem('ls_playerName',inp.value);}catch(e){}
+    if(inp.value.trim()) submitProgress(solved.every(x=>x)); });
+})();
+
+load();
+</script>
+</body>
+</html>
