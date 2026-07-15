@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jak to funguje – zařízení kolem počítače</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    --bg:#0b1220;--card:#131f36;--card2:#1c2c4a;--line:#2a3c5e;
+    --cyan:#38bdf8;--good:#22c55e;--amber:#fbbf24;--purple:#a78bfa;--pink:#f472b6;
+    --text:#e6edf7;--muted:#93a4bd;
+  }
+  html,body{margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:radial-gradient(circle at 50% -10%,#16233f,#0b1220 60%);color:var(--text);min-height:100vh;line-height:1.55;}
+  .wrap{max-width:820px;margin:0 auto;padding:16px 14px 60px;}
+  header{text-align:center;padding:8px 0 6px;}
+  header h1{font-size:25px;margin:6px 0 2px;}
+  header p{color:var(--muted);font-size:14px;margin:0;}
+
+  .tabs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:14px 0;}
+  .tab{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 13px;font-size:14px;font-weight:700;
+    color:var(--text);cursor:pointer;display:flex;align-items:center;gap:6px;}
+  .tab.active{background:var(--cyan);color:#04121f;border-color:var(--cyan);}
+
+  .panel{display:none;background:var(--card);border-radius:16px;padding:18px;}
+  .panel.active{display:block;}
+  .panel h2{font-size:21px;margin:0 0 4px;}
+  .panel .lead{color:var(--muted);font-size:14px;margin:0 0 14px;}
+  .stage{background:#0a1120;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+  canvas{max-width:100%;border-radius:8px;background:#060c16;}
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;width:100%;}
+  .ctl{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted);align-items:center;min-width:120px;}
+  .ctl input[type=range]{width:150px;accent-color:var(--cyan);}
+  .btn{border:none;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:800;cursor:pointer;color:#04121f;background:linear-gradient(180deg,#7dd3fc,#38bdf8);}
+  .btn.p{background:linear-gradient(180deg,#c4b5fd,#a78bfa);}
+  .btn:active{transform:translateY(1px);}
+  .readout{font-family:monospace;font-size:14px;color:var(--cyan);}
+  .swatch{width:120px;height:80px;border-radius:10px;border:1px solid var(--line);}
+
+  .explain{margin-top:14px;font-size:14.5px;}
+  .explain b{color:var(--cyan);}
+  .steps{margin-top:10px;padding-left:0;list-style:none;}
+  .steps li{padding:6px 0 6px 28px;position:relative;color:#dbe7ff;font-size:14px;}
+  .steps li::before{content:attr(data-n);position:absolute;left:0;top:5px;width:20px;height:20px;border-radius:50%;
+    background:var(--purple);color:#04121f;font-size:12px;font-weight:800;text-align:center;line-height:20px;}
+  .did{background:#12233d;border-left:3px solid var(--amber);border-radius:0 10px 10px 0;padding:10px 12px;margin-top:12px;font-size:13.5px;color:#e9d9b0;}
+  .did b{color:var(--amber);}
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div style="font-size:38px">🔍⚙️</div>
+    <h1>Jak to funguje</h1>
+    <p>Zařízení kolem počítače – klikej, posouvej a objevuj princip</p>
+  </header>
+
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-t="printer">🖨️ Tiskárna</div>
+    <div class="tab" data-t="camera">📷 Fotoaparát</div>
+    <div class="tab" data-t="monitor">🖥️ Monitor</div>
+    <div class="tab" data-t="speaker">🔊 Reproduktor</div>
+    <div class="tab" data-t="mouse">🖱️ Myš</div>
+  </div>
+
+  <!-- PRINTER -->
+  <div class="panel active" id="printer">
+    <h2>🖨️ Inkoustová tiskárna</h2>
+    <p class="lead">Obraz vzniká z tisíců maličkých kapiček inkoustu. Zmáčkni „Tisknout" a sleduj, jak tisková hlava jezdí sem a tam.</p>
+    <div class="stage">
+      <canvas id="prCanvas" width="480" height="300"></canvas>
+      <div class="controls">
+        <button class="btn" id="prPrint">🖨️ Tisknout</button>
+        <div class="ctl">Velikost kapek (DPI)
+          <input type="range" id="prDpi" min="6" max="18" value="10">
+        </div>
+        <label class="ctl" style="flex-direction:row;gap:6px;align-items:center;color:var(--text)">
+          <input type="checkbox" id="prCmyk"> ukázat body zblízka (CMYK)
+        </label>
+      </div>
+    </div>
+    <div class="explain">
+      <ul class="steps">
+        <li data-n="1">Tisková hlava jezdí <b>zleva doprava</b> nad papírem a stříká mikroskopické kapky inkoustu.</li>
+        <li data-n="2">Papír se po každém řádku posune o kousek dál – tak se obraz skládá <b>řádek po řádku</b>.</li>
+        <li data-n="3">Všechny barvy se míchají jen ze <b>4 inkoustů: azurová, purpurová, žlutá a černá (CMYK)</b> – z dálky body splynou v plný obraz.</li>
+      </ul>
+      <div class="did"><b>Věděl jsi?</b> „DPI" = dots per inch, počet bodů na palec. Víc DPI = menší kapky a ostřejší tisk. Laserová tiskárna funguje jinak – kreslí obraz laserem staticky nabitým práškem (toner).</div>
+    </div>
+  </div>
+
+  <!-- CAMERA -->
+  <div class="panel" id="camera">
+    <h2>📷 Digitální fotoaparát</h2>
+    <p class="lead">Světlo projde objektivem a dopadne na senzor – mřížku světlocitlivých bodů (pixelů). Pohraj si s expozicí a rozlišením.</p>
+    <div class="stage">
+      <canvas id="camCanvas" width="480" height="300"></canvas>
+      <div class="controls">
+        <div class="ctl">Rozlišení (počet pixelů)
+          <input type="range" id="camRes" min="8" max="120" value="48">
+        </div>
+        <div class="ctl">Expozice (množství světla)
+          <input type="range" id="camExp" min="20" max="200" value="100">
+        </div>
+      </div>
+    </div>
+    <div class="explain">
+      <ul class="steps">
+        <li data-n="1">Objektiv soustředí světlo na <b>senzor</b> – mřížku milionů malých čidel.</li>
+        <li data-n="2">Každé čidlo (pixel) změří, <b>kolik světla</b> na něj dopadlo. Víc pixelů = víc detailů (megapixely).</li>
+        <li data-n="3">Nad čidly je barevný filtr (<b>Bayer, R-G-G-B</b>), takže každý pixel vidí jednu barvu; software z nich složí plnou barevnou fotku.</li>
+      </ul>
+      <div class="did"><b>Věděl jsi?</b> „Expozice" je, jak dlouho a kolik světla senzor sbírá. Málo světla = tmavá a zrnitá fotka, moc světla = přepálená doběla.</div>
+    </div>
+  </div>
+
+  <!-- MONITOR -->
+  <div class="panel" id="monitor">
+    <h2>🖥️ Monitor (LCD/LED)</h2>
+    <p class="lead">Každý bod obrazovky se skládá ze tří světélek – červeného, zeleného a modrého. Míchej je a udělej libovolnou barvu.</p>
+    <div class="stage">
+      <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;justify-content:center">
+        <div class="swatch" id="mSwatch"></div>
+        <canvas id="mCanvas" width="180" height="120"></canvas>
+      </div>
+      <div class="controls">
+        <div class="ctl" style="color:#f87171">Červená (R) <input type="range" id="mR" min="0" max="255" value="90"></div>
+        <div class="ctl" style="color:#4ade80">Zelená (G) <input type="range" id="mG" min="0" max="255" value="200"></div>
+        <div class="ctl" style="color:#60a5fa">Modrá (B) <input type="range" id="mB" min="0" max="255" value="230"></div>
+      </div>
+      <div class="readout" id="mReadout">rgb(90, 200, 230)</div>
+    </div>
+    <div class="explain">
+      <ul class="steps">
+        <li data-n="1">Obraz je mřížka <b>pixelů</b> – u Full HD jich je 1920×1080, přes 2 miliony.</li>
+        <li data-n="2">Každý pixel má tři <b>subpixely: R, G, B</b>. Jejich jas se dá řídit zvlášť.</li>
+        <li data-n="3">Mícháním jasu tří světel vznikne <b>jakákoli barva</b> – a z dálky tři proužky splynou v jeden bod. (Napravo je přiblížený pixel.)</li>
+      </ul>
+      <div class="did"><b>Věděl jsi?</b> Bílá = všechny tři na maximum, černá = všechny zhasnuté. Tomuhle míchání světla se říká <b>aditivní</b> (na rozdíl od míchání barev na papíře).</div>
+    </div>
+  </div>
+
+  <!-- SPEAKER -->
+  <div class="panel" id="speaker">
+    <h2>🔊 Reproduktor a mikrofon</h2>
+    <p class="lead">Reproduktor mění elektrický signál na chvění vzduchu, které slyšíme. Pusť tón a sleduj membránu i zvukovou vlnu.</p>
+    <div class="stage">
+      <canvas id="spCanvas" width="480" height="240"></canvas>
+      <div class="controls">
+        <button class="btn p" id="spPlay">▶ Přehrát tón</button>
+        <div class="ctl">Výška tónu (frekvence)
+          <input type="range" id="spFreq" min="120" max="900" value="330">
+        </div>
+        <div class="readout" id="spHz">330 Hz</div>
+      </div>
+    </div>
+    <div class="explain">
+      <ul class="steps">
+        <li data-n="1">Do cívky reproduktoru teče <b>měnící se elektrický proud</b> (signál zvuku).</li>
+        <li data-n="2">Cívka je v poli <b>magnetu</b>, proud ji tlačí a táhne, takže <b>membrána kmitá</b> dopředu a dozadu.</li>
+        <li data-n="3">Membrána <b>tlačí vzduch</b> a vytváří zvukové vlny. Rychlejší kmity = <b>vyšší tón</b>.</li>
+      </ul>
+      <div class="did"><b>Věděl jsi?</b> <b>Mikrofon je reproduktor naopak</b>: zvuk rozkmitá jeho membránu a tím vznikne elektrický signál. Proto sluchátka umí (technicky) fungovat i jako mikrofon.</div>
+    </div>
+  </div>
+
+  <!-- MOUSE -->
+  <div class="panel" id="mouse">
+    <h2>🖱️ Optická myš</h2>
+    <p class="lead">Pod myší je malinká kamera, která povrch fotí tisíckrát za vteřinu. Přejížděj myší/prstem po ploše a sleduj, co „vidí".</p>
+    <div class="stage">
+      <canvas id="msCanvas" width="480" height="260" style="touch-action:none;cursor:crosshair"></canvas>
+      <div class="controls">
+        <div class="readout" id="msOut">pohyb: Δx = 0, Δy = 0 &nbsp; | &nbsp; snímků: 0</div>
+        <button class="btn" id="msReset">Vynulovat</button>
+      </div>
+    </div>
+    <div class="explain">
+      <ul class="steps">
+        <li data-n="1">LED nebo laser nasvítí povrch a <b>malá kamera</b> ho vyfotí – klidně 8000× za sekundu.</li>
+        <li data-n="2">Čip <b>porovná dva po sobě jdoucí snímky</b> a spočítá, o kolik se vzor posunul.</li>
+        <li data-n="3">Z posunu určí <b>směr a rychlost</b> pohybu a pošle je počítači jako pohyb kurzoru.</li>
+      </ul>
+      <div class="did"><b>Věděl jsi?</b> Proto optická myš špatně funguje na skle nebo lesklém povrchu – kamera nevidí žádný vzor, který by mohla porovnávat.</div>
+    </div>
+  </div>
+
+  <footer>Interaktivní výuka · zařízení kolem počítače · letní škola</footer>
+</div>
+
+<script>
+/* ============ TABY ============ */
+const tabs=document.getElementById('tabs');
+tabs.addEventListener('click',e=>{ const t=e.target.closest('.tab'); if(!t)return;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active'); document.getElementById(t.dataset.t).classList.add('active');
+  if(t.dataset.t==='printer') drawPrinter();
+  if(t.dataset.t==='camera') drawCamera();
+  if(t.dataset.t==='monitor') drawMonitor();
+  if(t.dataset.t==='mouse') drawMouseBase();
+});
+
+/* ============ 1) TISKÁRNA ============ */
+const prC=document.getElementById('prCanvas'), prX=prC.getContext('2d');
+const prDpi=document.getElementById('prDpi'), prCmyk=document.getElementById('prCmyk');
+// target picture: procedural colorful scene
+function targetColor(u,v){ // u,v in 0..1
+  // sky gradient
+  let r=100+120*v, g=160+70*v, b=235-60*v;
+  // sun
+  const dx=u-0.75, dy=v-0.25; if(dx*dx+dy*dy<0.02){ return [255,210,60]; }
+  // hill
+  if(v>0.68){ return [70,160,80]; }
+  // house
+  if(u>0.2&&u<0.45&&v>0.5&&v<0.72){ return [200,90,70]; }
+  // roof
+  if(v>0.42&&v<0.52 && Math.abs(u-0.325)< (v-0.42)*2.2){ return [120,60,50]; }
+  return [r,g,b];
+}
+let prAnim=null;
+function drawPrinter(reveal){
+  const step=+prDpi.value; const W=prC.width,H=prC.height;
+  prX.clearRect(0,0,W,H); prX.fillStyle='#e9eef5'; prX.fillRect(20,10,W-40,H-40);
+  const cols=Math.floor((W-40)/step), rows=Math.floor((H-60)/step);
+  const total=cols*rows; const shown=reveal==null?total:reveal;
+  for(let i=0;i<shown;i++){ const cx=i%cols, cy=Math.floor(i/cols); if(cy>=rows)break;
+    const [r,g,b]=targetColor((cx+0.5)/cols,(cy+0.5)/rows);
+    prX.fillStyle=`rgb(${r|0},${g|0},${b|0})`;
+    prX.beginPath(); prX.arc(20+cx*step+step/2, 20+cy*step+step/2, step*0.42, 0, 6.28); prX.fill();
+  }
+  // printhead
+  if(reveal!=null){ const cy=Math.floor((shown/cols)); const cx=shown%cols;
+    prX.fillStyle='#111827'; prX.fillRect(20+cx*step-6, 12, 12, 8+cy*step); }
+  prX.strokeStyle='#94a3b8'; prX.strokeRect(20,10,W-40,H-40);
+  // CMYK zoom overlay
+  if(prCmyk.checked){ prX.fillStyle='rgba(10,17,32,.92)'; prX.fillRect(W-160,H-150,150,140);
+    prX.strokeStyle='#38bdf8'; prX.strokeRect(W-160,H-150,150,140);
+    const cmy=[['#00b7d1',0,0],['#e5279a',1,0],['#f5e000',0,1],['#111',1,1]];
+    for(let yy=0;yy<6;yy++)for(let xx=0;xx<6;xx++){ const c=cmy[(xx+yy)%4];
+      prX.fillStyle=c[0]; prX.beginPath(); prX.arc(W-150+xx*22+11, H-140+yy*22+11, 8,0,6.28); prX.fill(); }
+    prX.fillStyle='#cbd5e1'; prX.font='11px monospace'; prX.fillText('body zblízka',W-155,H-6);
+  }
+}
+document.getElementById('prPrint').addEventListener('click',()=>{
+  if(prAnim) cancelAnimationFrame(prAnim);
+  const step=+prDpi.value; const cols=Math.floor((prC.width-40)/step), rows=Math.floor((prC.height-60)/step);
+  const total=cols*rows; let n=0;
+  (function loop(){ n+=Math.max(3,Math.floor(cols/3)); drawPrinter(Math.min(n,total));
+    if(n<total) prAnim=requestAnimationFrame(loop); else drawPrinter(); })();
+});
+prDpi.addEventListener('input',()=>drawPrinter());
+prCmyk.addEventListener('change',()=>drawPrinter());
+
+/* ============ 2) FOTOAPARÁT ============ */
+const camC=document.getElementById('camCanvas'), camX=camC.getContext('2d');
+const camRes=document.getElementById('camRes'), camExp=document.getElementById('camExp');
+function scene(u,v){ // colorful scene to photograph
+  let r=60+180*u, g=70+160*v, b=200-120*u;
+  const dx=u-0.5,dy=v-0.45; const d=Math.sqrt(dx*dx+dy*dy);
+  if(d<0.18){ r=250; g=180; b=60; }        // circle
+  else if(d<0.24){ r=240;g=90;b=120; }      // ring
+  if(v>0.75){ r=40;g=120;b=90; }            // ground
+  return [r,g,b];
+}
+function drawCamera(){ const N=+camRes.value; const exp=+camExp.value/100;
+  const W=camC.width,H=camC.height; camX.clearRect(0,0,W,H);
+  const cw=W/N, ch=H/N;
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){ let [r,g,b]=scene((x+0.5)/N,(y+0.5)/N);
+    r=Math.min(255,r*exp); g=Math.min(255,g*exp); b=Math.min(255,b*exp);
+    camX.fillStyle=`rgb(${r|0},${g|0},${b|0})`; camX.fillRect(x*cw,y*ch,Math.ceil(cw),Math.ceil(ch)); }
+  // grid hint at high zoom
+  if(N<=32){ camX.strokeStyle='rgba(0,0,0,.15)'; for(let x=0;x<=N;x++){camX.beginPath();camX.moveTo(x*cw,0);camX.lineTo(x*cw,H);camX.stroke();}
+    for(let y=0;y<=N;y++){camX.beginPath();camX.moveTo(0,y*ch);camX.lineTo(W,y*ch);camX.stroke();} }
+}
+camRes.addEventListener('input',drawCamera); camExp.addEventListener('input',drawCamera);
+
+/* ============ 3) MONITOR ============ */
+const mR=document.getElementById('mR'),mG=document.getElementById('mG'),mB=document.getElementById('mB');
+const mSwatch=document.getElementById('mSwatch'),mCanvas=document.getElementById('mCanvas'),mX=mCanvas.getContext('2d');
+const mReadout=document.getElementById('mReadout');
+function drawMonitor(){ const r=+mR.value,g=+mG.value,b=+mB.value;
+  mSwatch.style.background=`rgb(${r},${g},${b})`; mReadout.textContent=`rgb(${r}, ${g}, ${b})`;
+  const W=mCanvas.width,H=mCanvas.height; mX.clearRect(0,0,W,H); mX.fillStyle='#000'; mX.fillRect(0,0,W,H);
+  const bw=W/3;
+  mX.fillStyle=`rgb(${r},0,0)`; mX.fillRect(0,0,bw,H);
+  mX.fillStyle=`rgb(0,${g},0)`; mX.fillRect(bw,0,bw,H);
+  mX.fillStyle=`rgb(0,0,${b})`; mX.fillRect(bw*2,0,bw,H);
+  mX.fillStyle='rgba(255,255,255,.15)'; mX.font='12px monospace';
+  mX.fillText('R',bw/2-4,H-8); mX.fillText('G',bw*1.5-4,H-8); mX.fillText('B',bw*2.5-4,H-8);
+}
+[mR,mG,mB].forEach(s=>s.addEventListener('input',drawMonitor));
+
+/* ============ 4) REPRODUKTOR ============ */
+const spC=document.getElementById('spCanvas'), spX=spC.getContext('2d');
+const spFreq=document.getElementById('spFreq'), spHz=document.getElementById('spHz');
+let audioCtx=null, osc=null, playing=false, spT=0, spRAF=null;
+function spDraw(){ const W=spC.width,H=spC.height; spX.clearRect(0,0,W,H);
+  const f=+spFreq.value; const amp=playing?1:0.35; const phase=spT*f/120;
+  // magnet + coil
+  spX.fillStyle='#334155'; spX.fillRect(20,H/2-45,40,90);
+  spX.fillStyle='#64748b'; spX.fillRect(28,H/2-25,10,50);
+  // cone (moves with vibration)
+  const off=Math.sin(phase)*12*amp;
+  spX.fillStyle='#26385a'; spX.beginPath();
+  spX.moveTo(60,H/2-45); spX.lineTo(140+off,H/2-70); spX.lineTo(140+off,H/2+70); spX.lineTo(60,H/2+45); spX.closePath(); spX.fill();
+  spX.strokeStyle='#a78bfa'; spX.lineWidth=2; spX.stroke();
+  // sound waves
+  for(let i=0;i<6;i++){ const rr=((spT*2*(f/300)+i*28)%180)+10; spX.strokeStyle=`rgba(56,189,248,${1-rr/190})`;
+    spX.beginPath(); spX.arc(150,H/2,rr,-1,1); spX.stroke(); }
+  // waveform
+  spX.strokeStyle='#fbbf24'; spX.lineWidth=2; spX.beginPath();
+  for(let x=0;x<W-320;x++){ const y=H/2 + Math.sin((x/28)*(f/220)+phase)*30*amp; if(x===0)spX.moveTo(340+x,y); else spX.lineTo(340+x,y); }
+  spX.stroke();
+  spX.fillStyle='#93a4bd'; spX.font='12px monospace'; spX.fillText('signál →',340,24);
+  spT+=1; spRAF=requestAnimationFrame(spDraw);
+}
+document.getElementById('spPlay').addEventListener('click',function(){
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(!playing){ osc=audioCtx.createOscillator(); const gain=audioCtx.createGain(); gain.gain.value=0.08;
+    osc.frequency.value=+spFreq.value; osc.type='sine'; osc.connect(gain).connect(audioCtx.destination); osc.start();
+    playing=true; this.textContent='⏹ Zastavit'; this.style.background='linear-gradient(180deg,#fca5a5,#ef4444)';
+  } else { osc.stop(); playing=false; this.textContent='▶ Přehrát tón'; this.style.background=''; }
+});
+spFreq.addEventListener('input',()=>{ spHz.textContent=spFreq.value+' Hz'; if(osc&&playing) osc.frequency.value=+spFreq.value; });
+
+/* ============ 5) MYŠ ============ */
+const msC=document.getElementById('msCanvas'), msX=msC.getContext('2d');
+let msDx=0,msDy=0,msFrames=0,msLast=null, msOffX=0, msOffY=0;
+function drawMouseBase(){ const W=msC.width,H=msC.height; msX.clearRect(0,0,W,H);
+  // textured surface (dots) shifted by accumulated movement to fake sensor view
+  msX.fillStyle='#0e1626'; msX.fillRect(0,0,W,H);
+  msX.fillStyle='#33507a';
+  const s=26; for(let y=-1;y<H/s+1;y++)for(let x=-1;x<W/s+1;x++){
+    const px=((x*s - (msOffX%s))+W)%W, py=((y*s-(msOffY%s))+H)%H;
+    msX.beginPath(); msX.arc(px,py,3,0,6.28); msX.fill(); }
+  // sensor window
+  msX.strokeStyle='#38bdf8'; msX.lineWidth=2; msX.strokeRect(W/2-55,H/2-55,110,110);
+  msX.fillStyle='rgba(56,189,248,.08)'; msX.fillRect(W/2-55,H/2-55,110,110);
+  msX.fillStyle='#93a4bd'; msX.font='12px monospace'; msX.fillText('co vidí kamera myši', W/2-70, H/2-64);
+  // movement arrow
+  if(Math.abs(msDx)+Math.abs(msDy)>0.5){ msX.strokeStyle='#fbbf24'; msX.lineWidth=3;
+    msX.beginPath(); msX.moveTo(W/2,H/2); const ex=W/2+Math.max(-50,Math.min(50,msDx)), ey=H/2+Math.max(-50,Math.min(50,msDy));
+    msX.lineTo(ex,ey); msX.stroke(); }
+  document.getElementById('msOut').innerHTML=`pohyb: Δx = ${msDx|0}, Δy = ${msDy|0} &nbsp; | &nbsp; snímků: ${msFrames}`;
+}
+function msMove(e){ const r=msC.getBoundingClientRect(); const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+  const y=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+  if(msLast){ msDx=x-msLast.x; msDy=y-msLast.y; msOffX+=msDx; msOffY+=msDy; msFrames++; }
+  msLast={x,y}; drawMouseBase();
+}
+msC.addEventListener('pointermove',msMove);
+msC.addEventListener('pointerleave',()=>{msLast=null; msDx=0;msDy=0; drawMouseBase();});
+document.getElementById('msReset').addEventListener('click',()=>{msDx=msDy=0;msFrames=0;msOffX=msOffY=0;msLast=null;drawMouseBase();});
+
+/* init */
+drawPrinter(); drawCamera(); drawMonitor(); drawMouseBase(); spHz.textContent=spFreq.value+' Hz';
+spDraw();
+</script>
+</body>
+</html>
