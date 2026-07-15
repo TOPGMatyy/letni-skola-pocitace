@@ -202,6 +202,7 @@ tabs.addEventListener('click',e=>{ const t=e.target.closest('.tab'); if(!t)retur
   if(t.dataset.t==='camera') drawCamera();
   if(t.dataset.t==='monitor') drawMonitor();
   if(t.dataset.t==='mouse') drawMouseBase();
+  if(t.dataset.t==='speaker'){ if(spRAF) cancelAnimationFrame(spRAF); spDraw(); }
 });
 
 /* ============ 1) TISKÁRNA ============ */
@@ -316,7 +317,8 @@ function spDraw(){ const W=spC.width,H=spC.height; spX.clearRect(0,0,W,H);
   for(let x=0;x<W-320;x++){ const y=H/2 + Math.sin((x/28)*(f/220)+phase)*30*amp; if(x===0)spX.moveTo(340+x,y); else spX.lineTo(340+x,y); }
   spX.stroke();
   spX.fillStyle='#93a4bd'; spX.font='12px monospace'; spX.fillText('signál →',340,24);
-  spT+=1; spRAF=requestAnimationFrame(spDraw);
+  spT+=1;
+  if(playing || document.getElementById('speaker').classList.contains('active')) spRAF=requestAnimationFrame(spDraw);
 }
 document.getElementById('spPlay').addEventListener('click',function(){
   if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
