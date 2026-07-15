@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prezentace: Jak fungují zařízení</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{--bg:#0b1220;--card:#131f36;--card2:#1c2c4a;--line:#2a3c5e;--cyan:#38bdf8;--good:#22c55e;--amber:#fbbf24;--purple:#a78bfa;--pink:#f472b6;--text:#eef3fb;--muted:#9fb0c8;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#080d18;color:var(--text);overflow:hidden;}
+  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:3vh 4vw 8vh;}
+  .slide{display:none;width:100%;max-width:1000px;animation:fade .35s;}
+  .slide.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(14px);}to{opacity:1;}}
+  .kicker{font-size:14px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--cyan);}
+  h1{font-size:min(7vw,50px);margin:8px 0 12px;line-height:1.1;}
+  h2{font-size:min(5vw,34px);margin:6px 0 16px;}
+  p,li{font-size:min(3.2vw,20px);line-height:1.5;}
+  ul{margin:8px 0;padding-left:0;list-style:none;}
+  ul li{position:relative;padding:8px 0 8px 34px;}
+  ul li::before{content:"▸";position:absolute;left:6px;color:var(--cyan);font-weight:800;}
+  .k{color:var(--cyan);font-weight:700;} .w{color:var(--amber);font-weight:700;} .g2{color:var(--good);font-weight:700;}
+  .big-emoji{font-size:min(16vw,110px);line-height:1;}
+  .sect{background:linear-gradient(135deg,#16233f,#0b1220);border-radius:20px;padding:6vh 5vw;text-align:center;}
+  .card{background:var(--card);border-radius:18px;padding:min(4vw,28px);}
+  .cols{display:grid;grid-template-columns:1fr;gap:16px;}
+  @media(min-width:720px){.cols{grid-template-columns:1fr 1fr;}}
+  .box{background:var(--card2);border-radius:14px;padding:16px;}
+  .box h3{margin:0 0 6px;font-size:min(3.6vw,20px);color:#fff;}
+  .steps{counter-reset:s;}
+  .steps li{padding:8px 0 8px 40px;border-bottom:1px solid #1c2a45;}
+  .steps li:last-child{border-bottom:none;}
+  .steps li::before{counter-increment:s;content:counter(s);left:0;top:8px;width:26px;height:26px;border-radius:50%;background:var(--purple);color:#04121f;font-size:14px;font-weight:800;text-align:center;line-height:26px;}
+  .tag{display:inline-block;font-size:13px;font-weight:800;background:var(--card2);color:var(--muted);border-radius:8px;padding:3px 10px;margin-top:10px;}
+  .note{color:var(--muted);font-size:min(2.6vw,15px);margin-top:12px;}
+  .fig{display:flex;justify-content:center;margin:10px 0 4px;}
+  .fig canvas,.fig svg{max-width:100%;height:auto;background:#0a1120;border:1px solid var(--line);border-radius:12px;}
+  .caption{text-align:center;color:var(--muted);font-size:min(2.4vw,14px);margin-top:2px;}
+
+  #hud{position:fixed;left:0;right:0;bottom:0;display:flex;align-items:center;gap:12px;padding:12px 18px;background:linear-gradient(#0000,#080d18);}
+  #bar{flex:1;height:6px;background:#22314e;border-radius:4px;overflow:hidden;}
+  #bar>div{height:100%;background:linear-gradient(90deg,#38bdf8,#a78bfa);width:0;transition:width .3s;}
+  .nav{display:flex;gap:8px;}
+  .nav button{border:none;border-radius:10px;width:44px;height:40px;font-size:18px;font-weight:800;cursor:pointer;background:var(--card2);color:var(--text);}
+  .nav button:active{transform:translateY(1px);}
+  #counter{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:52px;text-align:center;}
+  table.cmp{width:100%;border-collapse:collapse;font-size:min(2.8vw,16px);margin-top:8px;}
+  table.cmp th,table.cmp td{border:1px solid var(--line);padding:6px 8px;text-align:center;}
+  table.cmp th{color:var(--muted);}
+  .yes{color:var(--good);font-weight:800;} .no{color:#f87171;font-weight:800;} .mid{color:var(--amber);font-weight:800;}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 1 -->
+  <div class="slide active sect">
+    <div class="big-emoji">🖨️📷🖥️🔊🖱️</div>
+    <h1>Jak fungují zařízení kolem počítače</h1>
+    <p class="k">Tiskárny · Fotoaparát · Monitor · Reproduktor · Myš</p>
+    <p class="note">Ovládání: šipky ← → nebo tlačítka dole (klikni pravou/levou půlku obrazovky).</p>
+  </div>
+
+  <!-- 2 -->
+  <div class="slide card">
+    <div class="kicker">Přehled</div><h1>Co nás čeká</h1>
+    <ul>
+      <li>🖨️ <b class="k">Tiskárny</b> – inkoustové, laserové (tonerové) a termální</li>
+      <li>📷 <b class="k">Fotoaparát</b> – od paprsku po hotovou fotku, Bayerova maska, expozice</li>
+      <li>🖥️ <b class="k">Monitor</b> – tekuté krystaly, polarizátory, LED vs OLED</li>
+      <li>🔊 <b class="k">Reproduktor</b> – z elektřiny na chvění vzduchu</li>
+      <li>🖱️ <b class="k">Myši</b> – LED, laser, BlueTrack</li>
+    </ul>
+    <p class="note">Společná myšlenka: skoro všude vzniká obraz nebo zvuk <b class="w">postupně, z malých kousků</b> – bodů, pixelů nebo kmitů.</p>
+  </div>
+
+  <!-- 3 SECTION -->
+  <div class="slide sect"><div class="big-emoji">🖨️</div><h1>Tiskárny</h1><p class="k">Jak se z pixelů stane fyzický obraz na papíře</p></div>
+
+  <!-- 4 -->
+  <div class="slide card"><div class="kicker">Tiskárny · základ</div><h2>Obraz vzniká z bodů</h2>
+    <ul>
+      <li>Tiskárna převádí <b class="k">digitální obraz</b> (pixely v paměti) na <b class="w">fyzické body</b> na papíře.</li>
+      <li>Odstíny vznikají <b class="k">rastrováním</b> – hustotou drobných barevných bodů. Oko je z dálky spojí.</li>
+      <li>Ostrost udává <b class="w">DPI</b> (dots per inch) – víc bodů na palec = ostřejší tisk.</li>
+    </ul>
+    <p class="note">Liší se hlavně tím, <b>čím</b> a <b>jak</b> ten bod na papír dostanou. Projdeme tři technologie.</p>
+  </div>
+
+  <!-- 5 -->
+  <div class="slide card"><div class="kicker">Tiskárny · inkoustová</div><h2>💧 Inkoustová – stříká kapky</h2>
+    <ol class="steps">
+      <li>Hlava má <b class="k">stovky–tisíce trysek</b>.</li>
+      <li>Kapka se vystřelí <b class="k">teplem</b> (bublinka) nebo <b class="k">piezokrystalem</b>, který se napětím prohne.</li>
+      <li>Hlava jezdí po řádcích, papír se posouvá – obraz vzniká <b class="w">řádek po řádku</b>.</li>
+      <li>Barvy míchá ze 4 inkoustů <b class="w">CMYK</b> (azurová, purpurová, žlutá, černá).</li>
+    </ol>
+  </div>
+
+  <!-- 5b inkjet cross-section -->
+  <div class="slide card"><div class="kicker">Tiskárny · inkoustová · řez tryskou</div><h2>Jak tryska vystřelí kapku</h2>
+    <div class="fig"><svg viewBox="0 0 700 300">
+      <rect x="250" y="30" width="200" height="92" rx="10" fill="#1e5fa8" stroke="#3d557f"/>
+      <text x="352" y="82" fill="#dbe7ff" font-size="18" text-anchor="middle" font-weight="bold">inkoust</text>
+      <rect x="262" y="55" width="16" height="58" rx="3" fill="#ef4444"/>
+      <text x="238" y="88" fill="#f87171" font-size="14" text-anchor="end">ohřívač /</text>
+      <text x="238" y="106" fill="#f87171" font-size="14" text-anchor="end">piezokrystal</text>
+      <path d="M300 122 L400 122 L366 192 L334 192 Z" fill="#1e73c8" stroke="#3d557f"/>
+      <text x="470" y="150" fill="#93a4bd" font-size="14">tryska (nozzle)</text>
+      <line x1="382" y1="178" x2="465" y2="146" stroke="#93a4bd" stroke-width="1.5"/>
+      <ellipse cx="350" cy="216" rx="12" ry="14" fill="#38bdf8"/>
+      <ellipse cx="350" cy="246" rx="9" ry="10" fill="#38bdf8" opacity="0.75"/>
+      <text x="418" y="224" fill="#38bdf8" font-size="14">kapka inkoustu</text>
+      <line x1="362" y1="216" x2="415" y2="220" stroke="#38bdf8" stroke-width="1.5"/>
+      <rect x="120" y="266" width="460" height="30" fill="#e9eef5"/>
+      <circle cx="350" cy="281" r="6" fill="#1e73c8"/>
+      <text x="150" y="286" fill="#334155" font-size="14">papír</text>
+    </svg></div>
+    <div class="caption">Řez jednou tryskou tiskové hlavy – takových je na hlavě stovky až tisíce.</div>
+    <div class="cols">
+      <div class="box"><h3>🔥 Termální (bublinková)</h3><p>Mikroohřívač zahřeje inkoust, vznikne <b class="k">parní bublina</b>, ta prudce vytlačí kapku ven. Po ochlazení se komůrka zase nasaje.</p></div>
+      <div class="box"><h3>⚡ Piezoelektrická</h3><p>Místo ohřívače je <b class="k">piezokrystal</b>, který po přiložení napětí změní tvar a kapku mechanicky vymáčkne – přesnější a šetrnější.</p></div>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="slide card"><div class="kicker">Tiskárny · proč CMYK</div><h2>Proč CMYK a ne RGB?</h2>
+    <ul>
+      <li>Papír <b class="w">sám nesvítí</b> – barvu vidíme jako <b class="k">odražené světlo</b>.</li>
+      <li>Inkoust světlo <b class="k">ubírá</b> (subtraktivní míchání) → hodí se azurová, purpurová, žlutá.</li>
+      <li>Černá (K) se přidává pro sytý text a úsporu barevného inkoustu.</li>
+    </ul>
+    <p class="tag">🖥️ Monitor je opak: světlo přidává (aditivně, RGB).</p>
+  </div>
+
+  <!-- 7 -->
+  <div class="slide card"><div class="kicker">Tiskárny · laserová</div><h2>⚡ Laserová (tonerová) – 5 kroků</h2>
+    <ol class="steps">
+      <li><b class="k">Nabití válce</b> statickou elektřinou po celé ploše.</li>
+      <li><b class="k">Osvit laserem</b> – kde svítí, náboj se vybije → neviditelný obraz z náboje.</li>
+      <li><b class="k">Nabalení toneru</b> (prášek z plastu + barviva) podle náboje.</li>
+      <li><b class="k">Přenos</b> toneru na papír.</li>
+      <li><b class="k">Fixace (fuser)</b> – horké válce toner roztaví a zapečou do papíru.</li>
+    </ol>
+  </div>
+
+  <!-- 7b laser cross-section -->
+  <div class="slide card"><div class="kicker">Tiskárny · laserová · vnitřek</div><h2>Vnitřek laserové tiskárny</h2>
+    <div class="fig"><svg viewBox="0 0 700 360">
+      <circle cx="350" cy="180" r="95" fill="#26385a" stroke="#64748b" stroke-width="3"/>
+      <circle cx="350" cy="180" r="68" fill="#1a2740"/>
+      <text x="350" y="185" fill="#93a4bd" font-size="15" text-anchor="middle">válec (drum)</text>
+      <circle cx="250" cy="112" r="24" fill="#334155" stroke="#f59e0b" stroke-width="2"/>
+      <text x="238" y="72" fill="#f59e0b" font-size="15" text-anchor="middle" font-weight="bold">1 nabití</text>
+      <rect x="335" y="18" width="120" height="26" rx="6" fill="#1a2740" stroke="#f87171"/>
+      <text x="395" y="36" fill="#f87171" font-size="14" text-anchor="middle" font-weight="bold">2 laser</text>
+      <line x1="395" y1="44" x2="362" y2="98" stroke="#f87171" stroke-width="2"/>
+      <circle cx="472" cy="180" r="30" fill="#111827" stroke="#a78bfa" stroke-width="2"/>
+      <text x="472" y="132" fill="#a78bfa" font-size="15" text-anchor="middle" font-weight="bold">3 toner</text>
+      <rect x="120" y="288" width="360" height="28" fill="#e9eef5"/>
+      <text x="300" y="340" fill="#93a4bd" font-size="15" text-anchor="middle">4 přenos na papír</text>
+      <line x1="350" y1="275" x2="350" y2="288" stroke="#94a3b8" stroke-width="2"/>
+      <circle cx="565" cy="292" r="20" fill="#7a2e2e" stroke="#f87171" stroke-width="2"/>
+      <circle cx="565" cy="332" r="20" fill="#7a2e2e" stroke="#f87171" stroke-width="2"/>
+      <rect x="500" y="303" width="130" height="18" fill="#e9eef5"/>
+      <text x="565" y="258" fill="#f87171" font-size="15" text-anchor="middle" font-weight="bold">5 fixace (teplo)</text>
+    </svg></div>
+    <div class="caption">1 válec se nabije → 2 laser místy vybije (nakreslí obraz) → 3 nabalí se toner → 4 přenos na papír → 5 fixace teplem.</div>
+  </div>
+
+  <!-- 8 -->
+  <div class="slide card"><div class="kicker">Tiskárny · laserová</div><h2>Proč je laserovka oblíbená</h2>
+    <ul>
+      <li>Výtisk vyjede <b class="w">teplý</b> (od fuseru) a je hned suchý.</li>
+      <li>Toner je zatavený → <b class="k">nerozpije ho voda</b>.</li>
+      <li>Rychlá, ostrý text; barevná má 4 tonery (CMYK).</li>
+    </ul>
+  </div>
+
+  <!-- 9 -->
+  <div class="slide card"><div class="kicker">Tiskárny · termální</div><h2>🔥 Termální – teplem</h2>
+    <div class="cols">
+      <div class="box"><h3>Přímý termotisk</h3><p>Zahřátá hlava zčerná <b class="k">termocitlivý papír</b> – bez inkoustu i toneru. Účtenky, štítky. <span class="w">Časem na světle vybledne.</span></p></div>
+      <div class="box"><h3>Termosublimace</h3><p>Teplo <b class="k">odpaří barvivo</b> z fólie, to se vsákne do papíru. Množstvím tepla se řídí sytost → <span class="g2">plynulé fotopřechody</span>.</p></div>
+    </div>
+  </div>
+
+  <!-- 10 SECTION -->
+  <div class="slide sect"><div class="big-emoji">📷</div><h1>Fotoaparát</h1><p class="k">Jak se z paprsku světla stane digitální fotka</p></div>
+
+  <!-- 11 -->
+  <div class="slide card"><div class="kicker">Fotoaparát · cesta světla</div><h2>Světlo → objektiv → senzor</h2>
+    <ol class="steps">
+      <li><b class="k">Objektiv</b> ohne paprsky a soustředí obraz do bodu na senzoru.</li>
+      <li><b class="k">Clona</b> (kruhový otvor) řídí množství světla a hloubku ostrosti.</li>
+      <li><b class="k">Závěrka</b> se otevře na daný čas a pustí světlo na senzor.</li>
+    </ol>
+  </div>
+
+  <!-- 12 -->
+  <div class="slide card"><div class="kicker">Fotoaparát · senzor</div><h2>Senzor a Bayerova maska</h2>
+    <ol class="steps">
+      <li><b class="k">Mikročočky</b> nasměrují víc světla do každé buňky.</li>
+      <li><b class="k">Bayerova maska</b> R-G-G-B: každá buňka vidí <b class="w">jen jednu barvu</b>.</li>
+      <li><b class="k">Fotony → elektrony:</b> víc světla = větší nasbíraný náboj.</li>
+      <li><b class="k">ADC</b> převede náboj na číslo (jas).</li>
+    </ol>
+  </div>
+
+  <!-- 13 -->
+  <div class="slide card"><div class="kicker">Fotoaparát · proč</div><h2>Proč 2× zelená (RGGB)?</h2>
+    <ul>
+      <li>Lidské oko je <b class="w">nejcitlivější na zelenou</b>.</li>
+      <li>Ze zelené čteme hlavně <b class="k">jas a detaily</b> (ostrost).</li>
+      <li>Víc zelených buněk = ostřejší, přirozenější obraz při stejném počtu pixelů.</li>
+    </ul>
+  </div>
+
+  <!-- 13b Bayer illustrated -->
+  <div class="slide card"><div class="kicker">Fotoaparát · Bayerova maska</div><h2>Bayerova maska krok za krokem</h2>
+    <div class="fig"><canvas id="bayerCanvas" width="740" height="210"></canvas></div>
+    <div class="caption">1) scéna → 2) senzor s maskou R-G-G-B → 3) co buňky naměří (každá jen jednu barvu) → 4) po demozaikování</div>
+    <ul>
+      <li>Nad každou buňkou senzoru je <b class="k">jeden barevný filtr</b> (červený, zelený, nebo modrý). Buňka tak <b class="w">propustí a změří jen jednu barvu</b> – zbylé dvě „nevidí".</li>
+      <li>Filtry se opakují po čtveřicích <b class="w">R-G-G-B</b> (odtud „Bayerova maska"). Zelená je dvakrát – oko z ní čte jas a detaily.</li>
+      <li><b class="k">Demozaikování:</b> software u každého pixelu <b>dopočítá chybějící dvě barvy</b> z okolních buněk (např. červenou z nejbližších červených). Výsledek je plná RGB fotka.</li>
+    </ul>
+  </div>
+
+  <!-- 14 -->
+  <div class="slide card"><div class="kicker">Fotoaparát · zpracování</div><h2>Jak vznikne barevná fotka</h2>
+    <ol class="steps">
+      <li>Každý pixel zná <b class="k">jen svou jednu barvu</b> (přes filtr).</li>
+      <li><b class="w">Demozaikování:</b> software dopočítá zbylé dvě barvy z okolních pixelů.</li>
+      <li>Vyvážení bílé, doostření, komprese do JPEG (nebo surové RAW).</li>
+    </ol>
+    <p class="note">Megapixely = počet bodů. Víc bodů = víc detailů (a větší soubor).</p>
+  </div>
+
+  <!-- 15 -->
+  <div class="slide card"><div class="kicker">Fotoaparát · expozice</div><h2>Expoziční trojúhelník</h2>
+    <div class="cols">
+      <div class="box"><h3>Clona (f)</h3><p>Malé f = velký otvor = <b class="w">víc světla</b> + rozmazané pozadí.</p></div>
+      <div class="box"><h3>Čas závěrky</h3><p>Dlouhý = víc světla, ale <b class="w">rozmazaný pohyb</b>. Krátký zmrazí akci.</p></div>
+      <div class="box"><h3>ISO</h3><p>Vyšší = jasnější i za šera, ale přibývá <b class="w">šum (zrnění)</b>.</p></div>
+      <div class="box"><h3>Rovnováha</h3><p>Ubereš-li světlo jedním, musíš ho <b class="g2">přidat jiným</b>.</p></div>
+    </div>
+  </div>
+
+  <!-- 16 SECTION -->
+  <div class="slide sect"><div class="big-emoji">🖥️</div><h1>Monitor</h1><p class="k">Jak vznikne obraz z tekutých krystalů</p></div>
+
+  <!-- 17 -->
+  <div class="slide card"><div class="kicker">Monitor · pixel</div><h2>Pixel = 3 subpixely R, G, B</h2>
+    <ul>
+      <li>Obraz je mřížka <b class="k">pixelů</b> (Full HD = přes 2 miliony).</li>
+      <li>Každý pixel má tři subpixely: <b style="color:#f87171">R</b>, <b style="color:#4ade80">G</b>, <b style="color:#60a5fa">B</b>.</li>
+      <li>Mícháním jejich jasu vznikne <b class="w">jakákoli barva</b> (aditivně). Bílá = všechny naplno, černá = zhasnuté.</li>
+    </ul>
+  </div>
+
+  <!-- 18 -->
+  <div class="slide card"><div class="kicker">Monitor · LCD</div><h2>LCD: světlo přes vrstvy</h2>
+    <ol class="steps">
+      <li><b class="k">LED podsvícení</b> vzadu svítí bílým světlem pořád.</li>
+      <li><b class="k">1. polarizátor</b> propustí světlo v jedné rovině.</li>
+      <li><b class="k">Tekuté krystaly</b> (tyčinkové molekuly) rovinu světla stáčejí.</li>
+      <li><b class="k">2. polarizátor</b> (otočený o 90°) pustí jen to, co krystaly stočily.</li>
+    </ol>
+  </div>
+
+  <!-- 19 -->
+  <div class="slide card"><div class="kicker">Monitor · krystaly</div><h2>Řízení jasu napětím</h2>
+    <ul>
+      <li>Bez napětí jsou krystaly <b class="k">stočené</b> → světlo otočí o 90° → projde → pixel svítí.</li>
+      <li>S napětím se krystaly <b class="w">narovnají</b> → světlo nestočí → 2. filtr ho zablokuje → tma.</li>
+      <li>Napětím se plynule řídí jas každého subpixelu (0–100 %). Každý má vlastní tranzistor (TFT).</li>
+    </ul>
+  </div>
+
+  <!-- 20 -->
+  <div class="slide card"><div class="kicker">Monitor · typy</div><h2>LED vs LCD vs OLED</h2>
+    <ul>
+      <li><b class="k">„LED monitor"</b> = pořád LCD, jen s LED podsvícením (dřív zářivky).</li>
+      <li><b class="k">OLED:</b> každý pixel je <b class="w">vlastní svítící dioda</b> – žádné podsvícení.</li>
+      <li>OLED vypnutý pixel = <b class="g2">dokonalá černá</b> a nekonečný kontrast.</li>
+    </ul>
+  </div>
+
+  <!-- 21 SECTION -->
+  <div class="slide sect"><div class="big-emoji">🔊</div><h1>Reproduktor</h1><p class="k">Z elektřiny na chvění vzduchu</p></div>
+
+  <!-- 22 -->
+  <div class="slide card"><div class="kicker">Reproduktor · princip</div><h2>Jak vznikne zvuk</h2>
+    <ol class="steps">
+      <li>Do <b class="k">cívky</b> teče střídavý proud (kopie zvuku).</li>
+      <li>Cívka je v poli <b class="k">magnetu</b> → proud vytvoří sílu, která ji tlačí ven/dovnitř.</li>
+      <li>Cívka hýbe <b class="k">membránou</b> přesně podle signálu.</li>
+      <li>Membrána <b class="w">tlačí a ředí vzduch</b> → zvuková vlna.</li>
+    </ol>
+  </div>
+
+  <!-- 23 -->
+  <div class="slide card"><div class="kicker">Reproduktor · vlastnosti</div><h2>Výška, hlasitost, mikrofon</h2>
+    <ul>
+      <li><b class="k">Frekvence</b> kmitů = výška tónu. <b class="k">Amplituda</b> (výkyv) = hlasitost.</li>
+      <li>Velký basák rozhýbe hodně vzduchu pomalu (basy), malý výškový kmitá rychle (výšky).</li>
+      <li><b class="w">Mikrofon je reproduktor naopak</b>: zvuk rozkmitá membránu → vznikne elektrický signál.</li>
+    </ul>
+  </div>
+
+  <!-- 24 SECTION -->
+  <div class="slide sect"><div class="big-emoji">🖱️</div><h1>Myši</h1><p class="k">Mrňavá kamera, která poznává pohyb</p></div>
+
+  <!-- 25 -->
+  <div class="slide card"><div class="kicker">Myš · princip</div><h2>Jak myš pozná pohyb</h2>
+    <ol class="steps">
+      <li>Zdroj světla (LED/laser) <b class="k">nasvítí povrch</b> pod ostrým úhlem.</li>
+      <li>Malá kamera povrch <b class="w">fotí 1 000–12 000×/s</b>.</li>
+      <li>Procesor <b class="k">porovná dva snímky</b> a spočítá posun vzoru.</li>
+      <li>Z posunu určí směr a rychlost (v jednotkách DPI/CPI).</li>
+    </ol>
+  </div>
+
+  <!-- 26 -->
+  <div class="slide card"><div class="kicker">Myš · typy</div><h2>LED · Laser · BlueTrack</h2>
+    <table class="cmp">
+      <tr><th>Povrch</th><th>🔴 LED</th><th>🟥 Laser</th><th>🔵 BlueTrack</th></tr>
+      <tr><td>papír / matný stůl</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>koberec / látka</td><td class="mid">~</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>lesklý povrch</td><td class="no">✗</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+      <tr><td>sklo / zrcadlo</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+    </table>
+    <p class="note">Na skle selže každá – kamera nemá žádný vzor k porovnání. Laser vidí i jemnou strukturu, BlueTrack má modré světlo a širší optiku.</p>
+  </div>
+
+  <!-- 27 -->
+  <div class="slide card"><div class="kicker">Shrnutí</div><h2>Co si odnést</h2>
+    <ul>
+      <li>Obraz i zvuk vznikají <b class="w">postupně z malých kousků</b> – bodů, pixelů, kmitů.</li>
+      <li>Monitor světlo <b class="k">přidává</b> (RGB), tiskárna ho <b class="k">ubírá</b> (CMYK).</li>
+      <li>Fotoaparát barvu <b class="k">měří</b> (Bayer), monitor ji <b class="k">svítí</b> (subpixely).</li>
+      <li>Reproduktor mění elektřinu na pohyb a pohyb na zvuk; mikrofon naopak.</li>
+    </ul>
+  </div>
+
+  <!-- 28 -->
+  <div class="slide sect"><div class="big-emoji">🎯</div><h1>Teď si to vyzkoušej</h1>
+    <p class="k">Otevři interaktivní dema a velký kvíz</p>
+    <p class="note">Jak to funguje (dema): jak-to-funguje.html · Velký kvíz: kviz-zarizeni.html · Žebříček: leaderboard.html</p>
+  </div>
+
+</div>
+
+<div id="hud">
+  <div class="nav"><button onclick="go(-1)">←</button></div>
+  <div id="bar"><div id="barFill"></div></div>
+  <span id="counter">1 / 1</span>
+  <div class="nav"><button onclick="go(1)">→</button></div>
+</div>
+
+<script>
+const slides=[...document.querySelectorAll('.slide')]; let i=0;
+function show(){ slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+  document.getElementById('counter').textContent=(i+1)+' / '+slides.length;
+  document.getElementById('barFill').style.width=((i+1)/slides.length*100)+'%'; }
+function go(d){ i=Math.max(0,Math.min(slides.length-1,i+d)); show(); }
+document.addEventListener('keydown',e=>{ if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' ')go(1); if(e.key==='ArrowLeft'||e.key==='PageUp')go(-1); });
+document.getElementById('stage').addEventListener('click',e=>{ const x=e.clientX/window.innerWidth; go(x<0.35?-1:1); });
+
+/* ===== Bayerova maska – vykreslení 4 panelů ===== */
+function bayerScene(u,v){ let r=60+180*u,g=70+160*v,b=210-120*u; const dx=u-0.5,dy=v-0.42,d=Math.sqrt(dx*dx+dy*dy);
+  if(d<0.16){r=250;g=190;b=60;} else if(d<0.22){r=240;g=90;b=120;} if(v>0.78){r=50;g=140;b=90;} return [r|0,g|0,b|0]; }
+function bayerDraw(){ const c=document.getElementById('bayerCanvas'); if(!c)return; const x=c.getContext('2d');
+  const pw=150,ph=150,y0=14,gap=(c.width-4*pw)/3, N=12, cs=pw/N;
+  const px=[20, 20+pw+gap, 20+2*(pw+gap), 20+3*(pw+gap)];
+  x.clearRect(0,0,c.width,c.height);
+  // panel 1: scéna (jemná)
+  for(let iy=0;iy<pw;iy+=2)for(let ix=0;ix<pw;ix+=2){ const [r,g,b]=bayerScene(ix/pw,iy/pw); x.fillStyle=`rgb(${r},${g},${b})`; x.fillRect(px[0]+ix,y0+iy,2,2); }
+  // helper Bayer color
+  const bc=(cx,cy)=> (cy%2===0? (cx%2===0?'R':'G') : (cx%2===0?'G':'B'));
+  // panel 2: senzor s maskou (scéna + barevný nádech filtru)
+  for(let cy=0;cy<N;cy++)for(let cx=0;cx<N;cx++){ const [r,g,b]=bayerScene((cx+0.5)/N,(cy+0.5)/N); x.fillStyle=`rgb(${r},${g},${b})`; x.fillRect(px[1]+cx*cs,y0+cy*cs,cs,cs);
+    const f=bc(cx,cy); x.fillStyle = f==='R'?'rgba(255,0,0,.45)':f==='G'?'rgba(0,255,0,.4)':'rgba(0,80,255,.45)'; x.fillRect(px[1]+cx*cs,y0+cy*cs,cs,cs); }
+  // panel 3: naměřeno (jen jeden kanál)
+  for(let cy=0;cy<N;cy++)for(let cx=0;cx<N;cx++){ const [r,g,b]=bayerScene((cx+0.5)/N,(cy+0.5)/N); const f=bc(cx,cy);
+    x.fillStyle = f==='R'?`rgb(${r},0,0)`:f==='G'?`rgb(0,${g},0)`:`rgb(0,0,${b})`; x.fillRect(px[2]+cx*cs,y0+cy*cs,cs,cs); }
+  // panel 4: demozaikováno (plná barva)
+  for(let cy=0;cy<N;cy++)for(let cx=0;cx<N;cx++){ const [r,g,b]=bayerScene((cx+0.5)/N,(cy+0.5)/N); x.fillStyle=`rgb(${r},${g},${b})`; x.fillRect(px[3]+cx*cs,y0+cy*cs,cs,cs); }
+  // rámečky, popisky, šipky
+  x.strokeStyle='#334155'; [0,1,2,3].forEach(i=>x.strokeRect(px[i],y0,pw,pw));
+  x.fillStyle='#9fb0c8'; x.font='12px system-ui'; x.textAlign='center';
+  ['scéna','senzor + maska','naměřeno','výsledek'].forEach((t,i)=>x.fillText(t,px[i]+pw/2,y0+pw+22));
+  x.fillStyle='#38bdf8'; x.font='bold 22px system-ui';
+  for(let i=0;i<3;i++) x.fillText('→', px[i]+pw+gap/2, y0+pw/2+8);
+  x.textAlign='left';
+}
+
+show(); bayerDraw();
+</script>
+</body>
+</html>

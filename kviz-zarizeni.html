@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Velký kvíz – jak fungují zařízení</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{--bg:#0b1220;--card:#131f36;--card2:#1c2c4a;--line:#2a3c5e;--cyan:#38bdf8;--good:#22c55e;--bad:#ef4444;--amber:#fbbf24;--purple:#a78bfa;--text:#e6edf7;--muted:#93a4bd;}
+  html,body{margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:radial-gradient(circle at 50% -10%,#1a2140,#0b1220 65%);color:var(--text);min-height:100vh;line-height:1.55;}
+  .wrap{max-width:720px;margin:0 auto;padding:14px 14px 60px;}
+  h1{font-size:22px;text-align:center;margin:6px 0 2px;}
+  .sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:12px;}
+  .name{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:15px;margin-bottom:10px;}
+  .bar{height:8px;background:#22314e;border-radius:6px;overflow:hidden;margin-bottom:6px;}
+  .bar > div{height:100%;background:linear-gradient(90deg,#38bdf8,#a78bfa);width:0;transition:width .3s;}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:12px;}
+  .meta b{color:var(--text);}
+
+  .qcard{background:var(--card);border-radius:16px;padding:18px;}
+  .topic{display:inline-block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#04121f;background:var(--cyan);border-radius:6px;padding:2px 9px;}
+  .diff{float:right;font-size:13px;color:var(--amber);}
+  .q{font-size:18px;font-weight:700;margin:12px 0 14px;}
+  .opts{display:flex;flex-direction:column;gap:9px;}
+  .opt{background:linear-gradient(180deg,#26385a,#1a2740);border:1px solid #3d557f;border-radius:11px;padding:12px 14px;cursor:pointer;font-size:15px;color:#dbe7ff;text-align:left;}
+  .opt:hover{border-color:var(--cyan);}
+  .opt.correct{background:#12351f;border-color:var(--good);color:#bbf7d0;}
+  .opt.wrong{background:#3a1618;border-color:var(--bad);color:#fecaca;}
+  .opt[disabled]{cursor:default;}
+  .exp{margin-top:12px;border-radius:10px;padding:12px 14px;font-size:14px;display:none;line-height:1.5;}
+  .exp.ok{display:block;background:#12351f;border:1px solid var(--good);color:#d7f7e0;}
+  .exp.no{display:block;background:#3a1618;border:1px solid var(--bad);color:#fde2e2;}
+  .exp b{color:var(--amber);}
+  .next{margin-top:12px;width:100%;border:none;border-radius:12px;padding:14px;font-size:16px;font-weight:800;color:#04121f;background:linear-gradient(180deg,#7dd3fc,#38bdf8);cursor:pointer;display:none;}
+  .next.show{display:block;}
+  .end{background:var(--card);border-radius:16px;padding:22px;text-align:center;display:none;}
+  .end.show{display:block;}
+  .end .big{font-size:44px;font-weight:800;color:var(--cyan);margin:6px 0;}
+  .end .row{display:flex;justify-content:space-between;padding:8px 4px;border-bottom:1px solid var(--line);font-size:15px;}
+  .end .row b{color:var(--amber);}
+  .code{font-family:monospace;font-size:24px;font-weight:800;color:var(--good);letter-spacing:2px;margin-top:10px;}
+  .hint{color:var(--muted);font-size:12px;text-align:center;margin-top:14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧠 Velký kvíz: jak fungují zařízení</h1>
+  <div class="sub">Tiskárny · fotoaparát · monitor · reproduktor · myš · hardware. Přes 50 otázek, i pořádně těžké. Za správně na první pokus jsou body podle obtížnosti (⭐=1, ⭐⭐=2, ⭐⭐⭐=3).</div>
+
+  <input id="playerName" class="name" placeholder="Tvoje jméno / přezdívka (pro žebříček)">
+
+  <div class="bar"><div id="barFill"></div></div>
+  <div class="meta"><span>Otázka <b id="qNum">1</b> / <b id="qTot">0</b></span><span>Body: <b id="score">0</b></span></div>
+
+  <div class="qcard" id="qcard">
+    <span class="topic" id="topic"></span><span class="diff" id="diff"></span>
+    <div class="q" id="qtext"></div>
+    <div class="opts" id="opts"></div>
+    <div class="exp" id="exp"></div>
+    <button class="next" id="nextBtn" onclick="next()">Další otázka →</button>
+  </div>
+
+  <div class="end" id="end">
+    <div style="font-size:44px">🏁</div>
+    <h1 id="endName">Hotovo!</h1>
+    <div style="color:var(--muted);font-size:14px">Získal jsi</div>
+    <div class="big"><span id="finalScore">0</span> bodů</div>
+    <div class="row"><span>✅ Správně na první pokus</span><b id="finalCorrect">0</b></div>
+    <div class="row"><span>❓ Celkem otázek</span><b id="finalTotal">0</b></div>
+    <div class="row"><span>🎯 Úspěšnost</span><b id="finalPct">0 %</b></div>
+    <div class="code" id="finalCode">—</div>
+    <button class="next show" style="margin-top:16px" onclick="location.reload()">🔄 Hrát znovu</button>
+  </div>
+
+  <div class="hint">Tip: čti i vysvětlení – hodně otázek na sebe navazuje.</div>
+</div>
+
+<script>
+/* ===================== OTÁZKY ===================== */
+/* d = obtížnost (body). topic = téma. a = index správné. */
+const BANK = [
+ // ---- TISKÁRNY ----
+ {t:'Tiskárny',d:1,q:'Z jakých čtyř inkoustů míchá inkoustová tiskárna barvy?',opts:['RGB + bílá','CMYK (azurová, purpurová, žlutá, černá)','Červená, zelená, modrá, černá','Jen černá a barevná'],a:1,e:'Inkoust barvu z bílého papíru ubírá (subtraktivně), proto CMYK. K = černá (klíčová).'},
+ {t:'Tiskárny',d:2,q:'Proč tiskárna používá CMYK a ne RGB jako monitor?',opts:['CMYK má víc barev','Papír nesvítí – barvu vidíme jako odražené světlo, inkoust ho ubírá','RGB je dražší','Historický zvyk'],a:1,e:'Monitor světlo přidává (aditivně, RGB). Papír žádné světlo nevydává – inkoust dopadající světlo pohlcuje, takže se hodí azurová/purpurová/žlutá (subtraktivní míchání).'},
+ {t:'Tiskárny',d:2,q:'Jak inkoustová tiskárna vystřelí kapku inkoustu z trysky?',opts:['Vysokým tlakem vzduchu','Teplem (bublinka) nebo piezokrystalem, který se prohne napětím','Magnetem','Odstředivou silou'],a:1,e:'Termální hlava zahřeje inkoust, vznikne pára-bublina a ta kapku vystřelí. Piezoelektrická hlava místo toho použije krystal, který se po přiložení napětí deformuje a kapku vymáčkne.'},
+ {t:'Tiskárny',d:1,q:'Co znamená DPI u tiskárny?',opts:['Rychlost tisku','Počet bodů na palec (dots per inch)','Počet barev','Velikost papíru'],a:1,e:'Víc DPI = menší a hustší body = ostřejší tisk.'},
+ {t:'Tiskárny',d:3,q:'Seřaď hlavní kroky laserové tiskárny. Co je SPRÁVNĚ jako první?',opts:['Zahřátí fixační jednotky','Nabití světlocitlivého válce statickou elektřinou','Nasypání toneru na papír','Osvit papíru laserem'],a:1,e:'Nejdřív se celý válec (drum) nabije. Pak ho laser místy vybije (nakreslí obraz z náboje), na to se nabalí toner, přenese na papír a nakonec fixační jednotka toner zataví.'},
+ {t:'Tiskárny',d:2,q:'K čemu slouží fixační (fuser) jednotka v laserové tiskárně?',opts:['Nabíjí válec','Teplem roztaví a zatlačí toner do papíru','Míchá barvy','Suší inkoust'],a:1,e:'Toner je prášek z plastu a barviva. Fuser ho horkými válci roztaví a zapéče do papíru – proto výtisk vyjede teplý a nerozmaže se.'},
+ {t:'Tiskárny',d:2,q:'Co je toner?',opts:['Tekutý inkoust','Jemný prášek z plastu a barviva','Barevný vosk na pásce','Termocitlivá vrstva'],a:1,e:'Toner je suchý prášek; drží na válci podle elektrostatického náboje a fuser ho zataví do papíru.'},
+ {t:'Tiskárny',d:3,q:'Přímý termotisk (účtenky) tiskne tak, že…',opts:['stříká inkoust','zahřátá hlava zčerná termocitlivý papír – bez inkoustu i toneru','laser vypálí obraz','přenáší vosk z pásky'],a:1,e:'Speciální papír na teplo zčerná. Proto účtenky nemají inkoust – a taky proto na slunci/teple časem vyblednou.'},
+ {t:'Tiskárny',d:3,q:'Termosublimační (dye-sub) tiskárna dělá plynulé barevné přechody, protože…',opts:['má víc trysek','teplem odpaří (sublimuje) barvivo, jehož množství řídí sytost','tiskne pomaleji','používá 8 inkoustů'],a:1,e:'Množstvím tepla se plynule řídí, kolik barviva se odpaří a vsákne do papíru – proto fotokvalitní přechody bez viditelných bodů.'},
+ {t:'Tiskárny',d:1,q:'Čím se výtisk z laserové tiskárny liší od inkoustového?',opts:['Rozmazává ho voda','Bývá ostrý a nerozpije ho voda','Nedá se tisknout barevně','Je vždy pomalejší'],a:1,e:'Zatavený toner je odolný vůči vodě, kdežto inkoust se může rozpít.'},
+
+ // ---- FOTOAPARÁT ----
+ {t:'Fotoaparát',d:1,q:'Co dělá objektiv?',opts:['Měří světlo','Ohýbá paprsky a soustředí obraz na senzor','Ukládá fotku','Míchá barvy'],a:1,e:'Soustava čoček ohne světlo tak, aby se od každého bodu scény sešlo v jednom bodě na senzoru – vznikne ostrý obraz.'},
+ {t:'Fotoaparát',d:2,q:'Co ovlivňuje clona (aperture) kromě množství světla?',opts:['Barvu','Hloubku ostrosti (jak rozmazané je pozadí)','Rozlišení','Rychlost ukládání'],a:1,e:'Malé clonové číslo (velký otvor) = víc světla + malá hloubka ostrosti = rozmazané pozadí. Velké f = ostré od popředí po pozadí.'},
+ {t:'Fotoaparát',d:3,q:'Menší clonové číslo (např. f/1.4) znamená…',opts:['menší otvor a méně světla','větší otvor, více světla a rozmazanější pozadí','delší expoziční čas','vyšší ISO'],a:1,e:'F-číslo je poměr, proto menší číslo = větší otvor. Pozor, je to opačně, než by čekal – f/1.4 pouští hodně světla a dělá malou hloubku ostrosti.'},
+ {t:'Fotoaparát',d:2,q:'Dlouhý expoziční čas (pomalá závěrka) způsobí, že…',opts:['se pohyb rozmaže a přijde víc světla','se pohyb zmrazí','fotka bude tmavší','zvýší se ISO'],a:0,e:'Závěrka je déle otevřená → víc světla, ale cokoli se hýbe, se rozmaže. Krátký čas pohyb zmrazí, ale pustí míň světla.'},
+ {t:'Fotoaparát',d:2,q:'Co je vedlejším efektem vysokého ISO?',opts:['Rozmazané pozadí','Šum (zrnění) v obraze','Rozmazaný pohyb','Menší rozlišení'],a:1,e:'ISO zesiluje citlivost senzoru – pomůže za šera, ale zesílí i náhodný šum, takže přibývá zrnění.'},
+ {t:'Fotoaparát',d:3,q:'Proč je v Bayerově masce dvakrát tolik zelených buněk (RGGB)?',opts:['Zelené filtry jsou levnější','Oko je nejcitlivější na zelenou a čte z ní hlavně jas a detaily','Zelená je nejčastější barva ve fotkách','Kvůli symetrii'],a:1,e:'Lidský zrak má nejvyšší citlivost na zelenou a odvozuje z ní ostrost. Víc zelených buněk = ostřejší, přirozenější obraz při stejném počtu pixelů.'},
+ {t:'Fotoaparát',d:3,q:'Co je „demozaikování" (demosaicing)?',opts:['Ostření fotky','Dopočítání zbylých dvou barev každého pixelu z okolí','Komprese do JPEG','Vyvážení bílé'],a:1,e:'Každá buňka přes Bayerovu masku vidí jen jednu barvu. Software u každého pixelu dopočítá chybějící dvě barvy z okolních pixelů → plná RGB fotka.'},
+ {t:'Fotoaparát',d:2,q:'Jak vzniká z dopadajícího světla elektrický signál?',opts:['Světlo roztočí cívku','Fotony vyrazí v buňce elektrony (fotoelektrický jev), víc světla = větší náboj',' Teplo zvýší napětí','Světlo změní barvu filtru'],a:1,e:'V každé buňce dopadající fotony uvolní elektrony. Množství nasbíraného náboje odpovídá množství světla; převodník (ADC) ho pak převede na číslo.'},
+ {t:'Fotoaparát',d:1,q:'Co znamená „víc megapixelů"?',opts:['Jasnější fotka','Víc bodů = víc detailů (a větší soubor)','Rychlejší focení','Lepší barvy'],a:1,e:'Megapixel = milion pixelů. Víc pixelů zachytí jemnější detaily, ale soubor je větší a nepomůže to za tmy.'},
+ {t:'Fotoaparát',d:3,q:'Ubereš-li světlo kratším časem závěrky, jak udržíš stejnou expozici?',opts:['Snížíš ISO','Otevřeš víc clonu nebo zvýšíš ISO','Zmenšíš rozlišení','Nic nejde dělat'],a:1,e:'Expozice = souhra clony, času a ISO (expoziční trojúhelník). Ubereš-li jedním, musíš přidat jiným – větší clonou nebo vyšším ISO.'},
+ {t:'Fotoaparát',d:2,q:'K čemu jsou mikročočky nad buňkami senzoru?',opts:['Filtrují barvy','Nasměrují víc světla do každé buňky (aby se nic neztratilo)','Chladí senzor','Ostří obraz'],a:1,e:'Mezi buňkami jsou mezery (vodiče). Mikročočka nad buňkou posbírá i světlo, které by jinak dopadlo mimo, a nasměruje ho dovnitř.'},
+ {t:'Fotoaparát',d:2,q:'RAW oproti JPEG…',opts:['je menší soubor','obsahuje víc původních dat senzoru (lepší pro úpravy), ale je větší','má míň barev','nejde upravovat'],a:1,e:'JPEG je zpracovaný a zkomprimovaný (menší, ztrátový). RAW drží surová data z převodníku – dá se z něj vytáhnout víc při úpravách, ale zabere hodně místa.'},
+
+ // ---- MONITOR ----
+ {t:'Monitor',d:1,q:'Z čeho se skládá jeden pixel na LCD monitoru?',opts:['Z jednoho světla','Ze tří subpixelů: červený, zelený, modrý','Ze čtyř barev CMYK','Z jednoho krystalu'],a:1,e:'Mícháním jasu tří subpixelů (R, G, B) vznikne libovolná barva; z dálky splynou v jeden bod.'},
+ {t:'Monitor',d:2,q:'Bílá barva na obrazovce vznikne tak, že…',opts:['svítí jen bílý subpixel','všechny tři subpixely (R, G, B) svítí naplno','všechny subpixely zhasnou','se použije podsvícení navíc'],a:1,e:'Aditivní míchání světla: R+G+B na maximum = bílá. Všechny zhasnuté = černá.'},
+ {t:'Monitor',d:3,q:'Jak řídí LCD jas jednoho subpixelu?',opts:['Mění barvu podsvícení','Napětím natáčí tekuté krystaly, které víc/míň stočí procházející světlo','Zapíná a vypíná LED za pixelem','Mění tloušťku skla'],a:1,e:'Bez napětí jsou krystaly stočené a otočí rovinu světla o 90°, takže projde druhým polarizátorem (světlo). Napětí krystaly narovná, přestanou světlo stáčet → druhý polarizátor ho zablokuje → tma. Napětím se plynule řídí jas.'},
+ {t:'Monitor',d:3,q:'K čemu jsou v LCD dva polarizační filtry?',opts:['Zesilují barvy','První propustí světlo v jedné rovině, druhý (otočený o 90°) propustí jen to, co krystaly stočily','Chrání panel','Odrážejí světlo zpět'],a:1,e:'Bez polarizátorů by se nedalo řídit, kolik světla projde. Krystaly mezi nimi rovinu světla natáčejí, a druhý (kolmý) filtr tím pádem světlo buď pustí, nebo zablokuje.'},
+ {t:'Monitor',d:1,q:'„LED monitor" ve skutečnosti je…',opts:['úplně jiná technologie než LCD','pořád LCD, jen s LED podsvícením místo starých zářivek','monitor bez pixelů','stejný jako OLED'],a:1,e:'LCD potřebuje podsvícení. Dřív to byly zářivky (CCFL), dnes LED diody – proto „LED monitor". Panel s krystaly je pořád LCD.'},
+ {t:'Monitor',d:3,q:'Čím se OLED zásadně liší od LCD?',opts:['Má víc pixelů','Každý pixel sám svítí (organická dioda), nepotřebuje podsvícení','Používá CMYK','Nemá subpixely'],a:1,e:'U OLED je každý pixel vlastní svítící dioda. Vypnutý pixel nesvítí vůbec → dokonalá černá a nekonečný kontrast, což LCD s podsvícením neumí.'},
+ {t:'Monitor',d:2,q:'Proč má OLED „dokonalou černou"?',opts:['Má tmavší filtr','Černý pixel se úplně vypne a nesvítí (žádné podsvícení neprosvítá)','Používá víc krystalů','Má matný povrch'],a:1,e:'LCD má za panelem pořád svítící podsvícení, které i u černé kapánek prosvítá (černá je spíš tmavě šedá). OLED pixel se vypne úplně.'},
+ {t:'Monitor',d:2,q:'Co znamená „144 Hz" u monitoru?',opts:['144 pixelů','Obraz se překreslí 144× za sekundu','144 barev','Úhlopříčka'],a:1,e:'Obnovovací frekvence: kolikrát za sekundu se obraz vykreslí znovu. Vyšší = plynulejší pohyb, důležité třeba pro hry.'},
+ {t:'Monitor',d:2,q:'Míchání světla na monitoru (RGB) se nazývá…',opts:['subtraktivní','aditivní (barvy se sčítají, víc světla = světlejší)','digitální','pasivní'],a:1,e:'Aditivní: přidáváním světla se blížíš bílé. Na papíře je to naopak – subtraktivní (přidáváním inkoustu se blížíš černé).'},
+
+ // ---- REPRODUKTOR ----
+ {t:'Reproduktor',d:2,q:'Co roztřese membránu reproduktoru?',opts:['Statická elektřina','Cívka s proměnným proudem v poli magnetu (vzniká síla)','Teplo','Tlak vzduchu zvenčí'],a:1,e:'Do cívky (voice coil) teče střídavý proud. V poli permanentního magnetu na cívku působí síla, která ji tlačí ven a dovnitř – a s ní i membránu.'},
+ {t:'Reproduktor',d:1,q:'Co určuje výšku tónu?',opts:['Amplituda','Frekvence kmitů','Velikost magnetu','Barva membrány'],a:1,e:'Frekvence (kolikrát za sekundu membrána kmitne) = výška. Amplituda (velikost výkyvu) = hlasitost.'},
+ {t:'Reproduktor',d:2,q:'Co určuje hlasitost?',opts:['Frekvence','Amplituda (velikost výkyvu membrány)','Počet reproduktorů','Materiál kabelu'],a:1,e:'Větší výkyv membrány rozhýbe víc vzduchu → hlasitější zvuk.'},
+ {t:'Reproduktor',d:3,q:'Jak funguje mikrofon?',opts:['Stejně jako reproduktor','Opačně: zvuk rozkmitá membránu a tím vznikne elektrický signál','Zesiluje zvuk teplem','Měří tlak vzduchu čipem'],a:1,e:'Mikrofon je měnič naopak – zvuková vlna pohne membránou/cívkou v magnetu a indukuje elektrický signál. Proto sluchátko technicky funguje i jako (špatný) mikrofon.'},
+ {t:'Reproduktor',d:2,q:'Proč mají reprosoustavy velký basák i malý výškový reproduktor?',opts:['Kvůli vzhledu','Velký rozhýbe hodně vzduchu pomalu (basy), malý kmitá rychle (výšky)','Malý je záložní','Velký je jen na hlasitost'],a:1,e:'Nízké tóny potřebují rozhýbat hodně vzduchu → velká membrána. Vysoké tóny vyžadují rychlé kmity → malá lehká membrána. Proto se dělí.'},
+ {t:'Reproduktor',d:1,q:'Zvuk se k uchu šíří jako…',opts:['elektrický proud','střídání tlaku vzduchu (tlakové vlny)','světlo','magnetické pole'],a:1,e:'Membrána střídavě stlačuje a ředí vzduch. Tyto tlakové změny se šíří jako zvuková vlna.'},
+
+ // ---- MYŠ ----
+ {t:'Myš',d:2,q:'Jak optická myš pozná pohyb?',opts:['Kuličkou a válečky','Malá kamera fotí povrch a procesor porovnává po sobě jdoucí snímky','Magnetickým polem','GPS'],a:1,e:'Pod myší je maličká kamera, která povrch fotí i tisíce×/s. Čip porovná dva snímky a z posunu vzoru spočítá směr a rychlost.'},
+ {t:'Myš',d:3,q:'Čím se laserová myš liší od LED optické?',opts:['Je jen dražší','Laser vidí i jemnou strukturu, proto funguje i na lesklejších površích a bývá přesnější','Nepotřebuje procesor','Má kuličku'],a:1,e:'Koherentní laserové světlo prokreslí i drobnou strukturu povrchu, kterou červená LED nezachytí – laser proto zvládne i lesklejší plochy a nabízí vyšší DPI.'},
+ {t:'Myš',d:2,q:'Na jakém povrchu selže prakticky každá optická myš?',opts:['Na dřevě','Na skle nebo zrcadle','Na papíře','Na kovu'],a:1,e:'Na skle/zrcadle kamera nevidí žádný vzor, který by mohla porovnat mezi snímky, takže pohyb nerozpozná. Pomůže podložka.'},
+ {t:'Myš',d:3,q:'V čem je „BlueTrack" myš zvláštní?',opts:['Bluetooth připojení','Modrá LED + větší čočka a širší snímání – funguje i na koberci či nerovném povrchu','Svítí namodro pro efekt','Nepotřebuje baterie'],a:1,e:'BlueTrack (Microsoft) používá modré světlo (kratší vlnová délka = víc detailů) a širší optiku, takže zvládne i povrchy, kde LED i laser mají problém – kromě skla.'},
+ {t:'Myš',d:2,q:'Co udává DPI (CPI) u myši?',opts:['Rychlost kliknutí','Kolik kroků pohybu myš pošle na palec dráhy (citlivost)','Počet tlačítek','Vzorkování zvuku'],a:1,e:'Vyšší DPI = kurzor ujede víc pixelů při stejném pohybu ruky = citlivější myš.'},
+ {t:'Myš',d:1,q:'Co bylo předchůdcem optické myši?',opts:['Dotykový panel','Kuličková myš (gumová kulička roztáčela dva válečky)','Světelné pero','Trackpad'],a:1,e:'Kulička roztáčela osy X a Y. Špinila se a byla nepřesná, proto ji nahradila optika.'},
+
+ // ---- OBECNÝ HARDWARE ----
+ {t:'Hardware',d:1,q:'Kolik bitů má jeden bajt (byte)?',opts:['4','8','16','1024'],a:1,e:'1 bajt = 8 bitů; typicky zakóduje jeden znak.'},
+ {t:'Hardware',d:2,q:'Kolik různých hodnot dokáže zapsat 8 bitů?',opts:['8','64','256','1000'],a:2,e:'2^8 = 256 (např. 0–255, což je i rozsah jednoho barevného kanálu R/G/B).'},
+ {t:'Hardware',d:2,q:'Proč má jeden kanál barvy (R, G nebo B) hodnoty 0–255?',opts:['Náhoda','Je uložený v 8 bitech (2^8 = 256 úrovní)','Kvůli monitoru','Kvůli tiskárně'],a:1,e:'Každý kanál se běžně ukládá do 1 bajtu = 8 bitů = 256 úrovní jasu (0–255). Tři kanály = ~16,7 milionu barev.'},
+ {t:'Hardware',d:3,q:'Aditivní (RGB) vs. subtraktivní (CMY) míchání – co platí?',opts:['Obě přidávají světlo','RGB přidává světlo (→ bílá), CMY ubírá odražené světlo (→ černá)','Jsou totožné','CMY svítí, RGB ne'],a:1,e:'Monitor světlo vyzařuje a sčítá (RGB → bílá). Papír světlo odráží a inkoust ho pohlcuje (CMY → tmavne k černé). Proto různé „základní" barvy.'},
+ {t:'Hardware',d:2,q:'Co mají společného senzor fotoaparátu a obrazovka monitoru?',opts:['Nic','Oba pracují s mřížkou pixelů a barvami R/G/B','Oba tisknou','Oba mají krystaly'],a:1,e:'Senzor barvu R/G/B měří (přes filtry), monitor ji R/G/B svítí. Obojí je mřížka bodů (pixelů).'},
+ {t:'Hardware',d:2,q:'Účtenka z termotiskárny po čase na světle vybledne, protože…',opts:['dojde inkoust','papír je termocitlivý a teplo/UV ho postupně dál mění','se smaže toner','vyschne'],a:1,e:'Obraz drží jen chemická změna citlivé vrstvy. Teplo, světlo a UV ji časem změní i mimo tisk, takže text zesvětlá.'},
+ {t:'Hardware',d:3,q:'Proč se u fotoaparátu i monitoru mluví o „subpixelech", ale u tiskárny o „bodech"?',opts:['Je to totéž','Displej/senzor mají pevnou mřížku R/G/B prvků; tiskárna skládá odstín hustotou drobných barevných kapek (rastr)','Tiskárna nemá barvy','Náhodné pojmy'],a:1,e:'Displej i senzor mají fyzicky dané R/G/B prvky na pixel. Tiskárna nemá „poloviční kapku" – odstín tvoří tím, jak hustě rozmístí malé plné body jednotlivých inkoustů (polotónování).'},
+];
+
+/* ===================== STAV ===================== */
+let order=[], idx=0, score=0, correct=0, answered=false;
+const $=id=>document.getElementById(id);
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function start(){
+  order = shuffle(BANK.map((_,i)=>i));
+  $('qTot').textContent = BANK.length;
+  $('finalTotal').textContent = BANK.length;
+  load();
+}
+
+function load(){
+  answered=false;
+  const Q=BANK[order[idx]];
+  $('qNum').textContent = idx+1;
+  $('barFill').style.width = (idx/BANK.length*100)+'%';
+  $('topic').textContent = Q.t;
+  $('diff').textContent = '⭐'.repeat(Q.d)+' ('+Q.d+' b.)';
+  $('qtext').textContent = Q.q;
+  $('exp').className='exp'; $('exp').innerHTML='';
+  $('nextBtn').className='next';
+  // shuffle options, remember correct
+  const opts = Q.opts.map((text,i)=>({text,correct:i===Q.a}));
+  shuffle(opts);
+  const oc=$('opts'); oc.innerHTML='';
+  opts.forEach(o=>{ const b=document.createElement('button'); b.className='opt'; b.textContent=o.text;
+    b.addEventListener('click',()=>choose(b,o.correct,Q)); oc.appendChild(b); });
+}
+
+function choose(btn,isCorrect,Q){
+  if(answered) return; answered=true;
+  [...$('opts').children].forEach(b=>b.disabled=true);
+  if(isCorrect){ btn.classList.add('correct'); score+=Q.d; correct++; $('score').textContent=score;
+    $('exp').className='exp ok'; $('exp').innerHTML='✅ <b>Správně!</b> '+Q.e; }
+  else { btn.classList.add('wrong');
+    // highlight correct one
+    [...$('opts').children].forEach(b=>{ if(b.textContent===Q.opts[Q.a]) b.classList.add('correct'); });
+    $('exp').className='exp no'; $('exp').innerHTML='❌ <b>Špatně.</b> '+Q.e; }
+  $('nextBtn').className='next show';
+  submitProgress(false);
+}
+
+function next(){
+  idx++;
+  if(idx>=BANK.length){ end(); return; }
+  load(); window.scrollTo(0,0);
+}
+
+function end(){
+  $('qcard').style.display='none';
+  $('barFill').style.width='100%';
+  const e=$('end'); e.className='end show';
+  const name=($('playerName').value||'Hráč').trim();
+  $('endName').textContent=name+', hotovo!';
+  $('finalScore').textContent=score;
+  $('finalCorrect').textContent=correct;
+  $('finalPct').textContent=Math.round(correct/BANK.length*100)+' %';
+  const maxB=BANK.reduce((a,q)=>a+q.d,0);
+  $('finalCode').textContent='KVZ-'+String(score).padStart(3,'0')+'-'+String(correct).padStart(2,'0');
+  submitProgress(true);
+}
+
+/* ===================== ŽEBŘÍČEK ===================== */
+const FB='https://letni-skola-hry-default-rtdb.firebaseio.com';
+const SID='q_'+Math.random().toString(36).slice(2,10);
+function submitProgress(done){
+  const name=($('playerName').value||'').trim().slice(0,24); if(!name) return;
+  fetch(FB+'/scores/'+SID+'.json',{method:'PUT',body:JSON.stringify(
+    {name, game:'kviz', score, answered:idx+(answered?1:0), correct, done:!!done, ts:Date.now()})}).catch(()=>{});
+}
+(function(){ const inp=$('playerName');
+  try{ const s=localStorage.getItem('ls_playerName'); if(s) inp.value=s; }catch(e){}
+  inp.addEventListener('input',()=>{ try{localStorage.setItem('ls_playerName',inp.value);}catch(e){}
+    if(inp.value.trim()) submitProgress(false); });
+})();
+
+start();
+</script>
+</body>
+</html>

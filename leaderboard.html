@@ -86,6 +86,14 @@
         <tbody id="tD"></tbody></table>
       <div class="empty" id="eD">Zatím nikdo nediagnostikoval.</div>
     </div>
+
+    <div class="board">
+      <h2>🧠 Velký kvíz <span class="badge" id="cQ">0</span></h2>
+      <div class="desc">Otázky o zařízeních. Pořadí: nejvíc bodů.</div>
+      <table><thead><tr><th class="rank">#</th><th>Jméno</th><th class="num">Body</th><th class="num">Správně</th></tr></thead>
+        <tbody id="tQ"></tbody></table>
+      <div class="empty" id="eQ">Zatím nikdo nekvízoval.</div>
+    </div>
   </div>
 
   <div class="controls">
@@ -110,19 +118,23 @@ async function load(){
   const exp=rows.filter(x=>x.game==='expert');
   const logic=rows.filter(x=>x.game==='logic');
   const diag=rows.filter(x=>x.game==='diag');
+  const kviz=rows.filter(x=>x.game==='kviz');
 
   const by=(field)=>(a,b)=> (b.levels-a.levels) || ((a[field]||0)-(b[field]||0)) || (a.ts-b.ts);
   proc.sort(by('instr')); exp.sort(by('instr')); logic.sort(by('gates')); diag.sort(by('mistakes'));
+  kviz.sort((a,b)=> (b.score-a.score) || (b.correct-a.correct) || (a.ts-b.ts));
 
   renderBoard('tP','eP',proc,'instr');
   renderBoard('tX','eX',exp,'instr');
   renderBoard('tL','eL',logic,'gates');
   renderBoard('tD','eD',diag,'mistakes');
-  document.getElementById('count').textContent=proc.length+exp.length+logic.length+diag.length;
+  renderQuiz('tQ','eQ',kviz);
+  document.getElementById('count').textContent=proc.length+exp.length+logic.length+diag.length+kviz.length;
   document.getElementById('cP').textContent=proc.length;
   document.getElementById('cX').textContent=exp.length;
   document.getElementById('cL').textContent=logic.length;
   document.getElementById('cD').textContent=diag.length;
+  document.getElementById('cQ').textContent=kviz.length;
   document.getElementById('upd').textContent=new Date().toLocaleTimeString('cs-CZ');
 }
 
@@ -134,6 +146,16 @@ function renderBoard(tbId, eId, list, valField){
     <td class="name">${esc(r.name)}${r.done?'<span class="done-pill">hotovo</span>':''}</td>
     <td class="num">${r.levels||0}/8</td>
     <td class="num">${r[valField]||0}</td></tr>`).join('');
+}
+
+function renderQuiz(tbId, eId, list){
+  const tb=document.getElementById(tbId), e=document.getElementById(eId);
+  e.style.display=list.length?'none':'block';
+  tb.innerHTML=list.map((r,i)=>`<tr class="${medal[i]||''}">
+    <td class="rank">${i+1}</td>
+    <td class="name">${esc(r.name)}${r.done?'<span class="done-pill">dokončil</span>':''}</td>
+    <td class="num">${r.score||0}</td>
+    <td class="num">${r.correct||0}</td></tr>`).join('');
 }
 
 async function clearAll(){
