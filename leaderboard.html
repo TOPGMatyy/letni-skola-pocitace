@@ -22,7 +22,7 @@
   .live{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);margin-right:6px;animation:pulse 1.5s infinite;}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   .cols{display:grid;grid-template-columns:1fr;gap:16px;margin-top:14px;}
-  @media(min-width:820px){.cols{grid-template-columns:1fr 1fr;}}
+  @media(min-width:760px){.cols{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));}}
   .board{background:var(--card);border-radius:16px;padding:16px 16px 18px;}
   .board h2{margin:0 0 4px;font-size:20px;display:flex;align-items:center;gap:8px;}
   .board .desc{color:var(--muted);font-size:13px;margin-bottom:12px;}
@@ -70,6 +70,14 @@
         <tbody id="tX"></tbody></table>
       <div class="empty" id="eX">Zatím nikdo nehrál expert verzi.</div>
     </div>
+
+    <div class="board">
+      <h2>🔌 Logic Lab <span class="badge" id="cL">0</span></h2>
+      <div class="desc">Stavění z hradel. Pořadí: víc úrovní → méně hradel.</div>
+      <table><thead><tr><th class="rank">#</th><th>Jméno</th><th class="num">Úrovně</th><th class="num">Hradla</th></tr></thead>
+        <tbody id="tL"></tbody></table>
+      <div class="empty" id="eL">Zatím nikdo nestavěl z hradel.</div>
+    </div>
   </div>
 
   <div class="controls">
@@ -92,27 +100,29 @@ async function load(){
   const rows=Object.values(data||{}).filter(x=>x&&x.name);
   const proc=rows.filter(x=>x.game==='procesor');
   const exp=rows.filter(x=>x.game==='expert');
+  const logic=rows.filter(x=>x.game==='logic');
 
-  // levels desc, instr asc
-  const byLevels=(a,b)=> (b.levels-a.levels) || (a.instr-b.instr) || (a.ts-b.ts);
-  proc.sort(byLevels);
-  exp.sort(byLevels);
+  const by=(field)=>(a,b)=> (b.levels-a.levels) || ((a[field]||0)-(b[field]||0)) || (a.ts-b.ts);
+  proc.sort(by('instr')); exp.sort(by('instr')); logic.sort(by('gates'));
 
-  renderBoard('tP','eP',proc); renderBoard('tX','eX',exp);
-  document.getElementById('count').textContent=proc.length+exp.length;
+  renderBoard('tP','eP',proc,'instr');
+  renderBoard('tX','eX',exp,'instr');
+  renderBoard('tL','eL',logic,'gates');
+  document.getElementById('count').textContent=proc.length+exp.length+logic.length;
   document.getElementById('cP').textContent=proc.length;
   document.getElementById('cX').textContent=exp.length;
+  document.getElementById('cL').textContent=logic.length;
   document.getElementById('upd').textContent=new Date().toLocaleTimeString('cs-CZ');
 }
 
-function renderBoard(tbId, eId, list){
+function renderBoard(tbId, eId, list, valField){
   const tb=document.getElementById(tbId), e=document.getElementById(eId);
   e.style.display=list.length?'none':'block';
   tb.innerHTML=list.map((r,i)=>`<tr class="${medal[i]||''}">
     <td class="rank">${i+1}</td>
     <td class="name">${esc(r.name)}${r.done?'<span class="done-pill">hotovo</span>':''}</td>
     <td class="num">${r.levels||0}/8</td>
-    <td class="num">${r.instr||0}</td></tr>`).join('');
+    <td class="num">${r[valField]||0}</td></tr>`).join('');
 }
 
 async function clearAll(){

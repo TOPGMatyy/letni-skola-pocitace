@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logic Lab – postav počítač z hradel</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{
+    --bg:#0b1220;--card:#131f36;--card2:#1c2c4a;--line:#2a3c5e;
+    --cyan:#38bdf8;--good:#22c55e;--bad:#ef4444;--amber:#fbbf24;--purple:#a78bfa;
+    --on:#22c55e;--off:#3a4a63;--text:#e2e8f0;--muted:#93a4bd;--wire:#5b6f8c;
+  }
+  html,body{margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:radial-gradient(circle at 50% -10%,#101d3a,#0b1220 70%);color:var(--text);min-height:100vh;}
+  .wrap{max-width:900px;margin:0 auto;padding:12px 12px 60px;}
+  h1{font-size:21px;margin:6px 0 2px;text-align:center;}
+  h1 .tag{background:var(--purple);color:#04121f;font-size:12px;font-weight:800;border-radius:6px;padding:2px 7px;vertical-align:middle;margin-left:6px;}
+  .sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:10px;}
+  .name{width:100%;max-width:900px;margin:0 auto 10px;display:block;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:15px;}
+
+  .dots{display:flex;gap:4px;justify-content:center;margin-bottom:8px;flex-wrap:wrap;}
+  .dots .d{width:22px;height:8px;border-radius:4px;background:#2a3c5e;}
+  .dots .d.done{background:var(--good);}
+  .dots .d.cur{background:var(--purple);}
+
+  .goalbar{display:flex;align-items:center;gap:8px;background:var(--card);border-radius:12px;padding:10px 12px;margin-bottom:8px;}
+  .goalbar .n{background:var(--purple);color:#04121f;font-weight:800;border-radius:8px;padding:3px 9px;font-size:14px;}
+  .goalbar .g{flex:1;font-size:14px;}
+  .goalbar .g b{color:var(--amber);}
+
+  .toprow{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;margin-bottom:8px;}
+  .palette{flex:1;min-width:200px;background:var(--card);border-radius:12px;padding:10px;}
+  .palette h3,.truth h3{margin:0 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .pbtns{display:flex;flex-wrap:wrap;gap:6px;}
+  .pbtn{background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-weight:800;font-size:14px;color:var(--cyan);cursor:pointer;}
+  .pbtn:active{transform:translateY(1px);}
+  .pbtn[data-off]{opacity:.3;pointer-events:none;}
+  .truth{background:var(--card);border-radius:12px;padding:10px;font-size:13px;}
+  .truth table{border-collapse:collapse;}
+  .truth td,.truth th{border:1px solid var(--line);padding:2px 8px;text-align:center;font-family:monospace;}
+  .truth th{color:var(--muted);}
+  .truth td.o{color:var(--amber);font-weight:700;}
+
+  .canvas-wrap{background:#0a1120;border:1px solid var(--line);border-radius:12px;position:relative;overflow:hidden;
+    height:440px;touch-action:none;user-select:none;}
+  svg.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+  svg.wires path.wire{pointer-events:stroke;cursor:pointer;}
+
+  .node{position:absolute;border-radius:10px;background:linear-gradient(180deg,#26385a,#1a2740);
+    border:1px solid #3d5party;border:1px solid #3d557f;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:14px;color:#dbe7ff;cursor:grab;box-shadow:0 3px 8px rgba(0,0,0,.35);}
+  .node .gx{position:absolute;top:-8px;right:-8px;width:18px;height:18px;border-radius:50%;background:var(--bad);
+    color:#fff;font-size:12px;line-height:18px;text-align:center;cursor:pointer;font-weight:700;display:none;}
+  .node:hover .gx{display:block;}
+  .port{position:absolute;width:15px;height:15px;border-radius:50%;background:#0a1120;border:2px solid var(--cyan);cursor:crosshair;z-index:3;}
+  .port.in{left:-8px;} .port.out{right:-8px;}
+  .port.on{background:var(--on);border-color:var(--on);box-shadow:0 0 6px var(--on);}
+  .io{position:absolute;display:flex;align-items:center;gap:6px;}
+  .switch{width:52px;height:30px;border-radius:16px;background:var(--off);position:relative;cursor:pointer;transition:background .15s;border:1px solid var(--line);}
+  .switch.on{background:var(--on);}
+  .switch .k{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#dbe7ff;transition:left .15s;}
+  .switch.on .k{left:26px;}
+  .iolabel{font-weight:800;font-size:15px;color:var(--cyan);width:22px;text-align:center;}
+  .outlabel{font-weight:800;font-size:15px;}
+  .lamp{width:30px;height:30px;border-radius:50%;background:#20304d;border:2px solid var(--line);}
+  .lamp.on{background:var(--on);border-color:var(--on);box-shadow:0 0 10px var(--on);}
+
+  .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .btn{flex:1;min-width:120px;border:none;border-radius:10px;padding:12px;font-size:15px;font-weight:800;cursor:pointer;color:#04121f;background:linear-gradient(180deg,#86efac,#22c55e);}
+  .btn.s{background:var(--card2);color:var(--text);}
+  .btn:active{transform:translateY(1px);}
+  .result{margin-top:10px;border-radius:10px;padding:10px 12px;font-weight:700;font-size:14px;display:none;}
+  .result.ok{display:block;background:#12351f;border:1px solid var(--good);color:#bbf7d0;}
+  .result.no{display:block;background:#3a1618;border:1px solid var(--bad);color:#fecaca;}
+  .result .link{color:var(--cyan);cursor:pointer;text-decoration:underline;}
+  .hint{margin-top:8px;color:var(--muted);font-size:13px;}
+  .done-banner{background:linear-gradient(180deg,#3b1a5e,#0b1220);border:1px solid var(--purple);border-radius:14px;padding:16px;text-align:center;margin-bottom:12px;display:none;}
+  .done-banner .code{font-family:monospace;font-size:24px;font-weight:800;color:var(--amber);letter-spacing:2px;}
+  .tip{font-size:12px;color:var(--muted);text-align:center;margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔌 Logic Lab <span class="tag">POSTAV POČÍTAČ Z HRADEL</span></h1>
+  <div class="sub">Propojuj hradla drátky tak, aby výstup seděl s pravdivostní tabulkou. Cíl: sestavit binární sčítačku.</div>
+
+  <input id="playerName" class="name" placeholder="Tvoje jméno / přezdívka (pro žebříček)">
+
+  <div class="dots" id="dots"></div>
+  <div class="done-banner" id="doneBanner"></div>
+
+  <div class="goalbar">
+    <span class="n" id="lvNum">1</span>
+    <span class="g" id="lvGoal"></span>
+  </div>
+
+  <div class="toprow">
+    <div class="palette">
+      <h3>Přidej hradlo (klikni)</h3>
+      <div class="pbtns" id="palette"></div>
+      <div class="hint" id="hint"></div>
+    </div>
+    <div class="truth">
+      <h3>Cíl – pravdivostní tabulka</h3>
+      <div id="truth"></div>
+    </div>
+  </div>
+
+  <div class="canvas-wrap" id="canvas">
+    <svg class="wires" id="svg"></svg>
+  </div>
+
+  <div class="actions">
+    <button class="btn" onclick="check()">✔ Zkontrolovat</button>
+    <button class="btn s" onclick="clearGates()">🧹 Smazat hradla</button>
+    <button class="btn s" onclick="loadLevel(cur)">⟲ Reset úrovně</button>
+  </div>
+  <div class="result" id="result"></div>
+  <div class="tip">Drát nakreslíš tažením z <b>výstupního</b> kolečka (vpravo) do <b>vstupního</b> (vlevo). Klikni na drát = smazat. Nejlíp na počítači.</div>
+</div>
+
+<script>
+/* ===================== HRADLA ===================== */
+const GATE = {
+  AND:{ar:2, fn:(a,b)=>a&&b?1:0},
+  OR: {ar:2, fn:(a,b)=>a||b?1:0},
+  NOT:{ar:1, fn:(a)=>a?0:1},
+  XOR:{ar:2, fn:(a,b)=>(a^b)&1},
+  NAND:{ar:2, fn:(a,b)=>a&&b?0:1},
+};
+
+/* ===================== ÚROVNĚ ===================== */
+// truth(inputs[]) -> outputs[]
+const LEVELS = [
+  { title:'NOT – invertor', goal:'Postav <b>NOT</b>: výstup Y je opak vstupu A. (0→1, 1→0)',
+    hint:'Přidej jedno hradlo NOT. Spoj A → vstup NOT, výstup NOT → Y.',
+    inputs:['A'], outputs:['Y'], palette:['NOT'], truth:(i)=>[i[0]?0:1] },
+
+  { title:'AND – a zároveň', goal:'Postav <b>AND</b>: Y=1 jen když A i B jsou 1.',
+    hint:'Jedno hradlo AND, oba vstupy zapoj z A a B.',
+    inputs:['A','B'], outputs:['Y'], palette:['AND'], truth:(i)=>[i[0]&&i[1]?1:0] },
+
+  { title:'OR – nebo', goal:'Postav <b>OR</b>: Y=1 když je aspoň jeden vstup 1.',
+    hint:'Jedno hradlo OR.',
+    inputs:['A','B'], outputs:['Y'], palette:['OR'], truth:(i)=>[i[0]||i[1]?1:0] },
+
+  { title:'XOR – právě jeden', goal:'Postav <b>XOR</b> z hradel AND, OR, NOT: Y=1 když se A a B liší.',
+    hint:'XOR = (A OR B) AND NOT(A AND B). Budeš potřebovat víc hradel a rozvětvit dráty.',
+    inputs:['A','B'], outputs:['Y'], palette:['AND','OR','NOT'], truth:(i)=>[(i[0]^i[1])&1] },
+
+  { title:'NOT jen z NAND', goal:'NAND je univerzální! Postav <b>NOT</b> jen pomocí hradla <b>NAND</b>.',
+    hint:'Spoj oba vstupy NAND do stejného signálu A. NAND(A,A) = NOT A.',
+    inputs:['A'], outputs:['Y'], palette:['NAND'], truth:(i)=>[i[0]?0:1] },
+
+  { title:'AND jen z NAND', goal:'Postav <b>AND</b> jen z hradel <b>NAND</b> (žádné jiné).',
+    hint:'AND = NOT(NAND). Jeden NAND udělá NAND, druhý (se spojenými vstupy) ho invertuje.',
+    inputs:['A','B'], outputs:['Y'], palette:['NAND'], truth:(i)=>[i[0]&&i[1]?1:0] },
+
+  { title:'Poloviční sčítačka', goal:'Sečti dva bity. <b>S</b> = součet (XOR), <b>C</b> = přenos (AND).',
+    hint:'Dva výstupy: S = A XOR B, C = A AND B. Můžeš použít hradlo XOR.',
+    inputs:['A','B'], outputs:['S','C'], palette:['AND','OR','NOT','XOR'],
+    truth:(i)=>[(i[0]^i[1])&1, i[0]&&i[1]?1:0] },
+
+  { title:'FINÁLE: Plná sčítačka', goal:'Sečti 3 bity (A, B, přenos Cin). Vydej <b>S</b> a přenos <b>Cout</b>. Tohle je základ ALU!',
+    hint:'S = A XOR B XOR Cin. Cout = 1, když jsou aspoň dva vstupy 1 (majorita).',
+    inputs:['A','B','Cin'], outputs:['S','Cout'], palette:['AND','OR','NOT','XOR'],
+    truth:(i)=>{const s=(i[0]^i[1]^i[2])&1; const c=((i[0]&&i[1])||(i[1]&&i[2])||(i[0]&&i[2]))?1:0; return [s,c];} },
+];
+
+/* ===================== STAV ===================== */
+let cur=0;
+let solved=new Array(LEVELS.length).fill(false);
+let usedGates=new Array(LEVELS.length).fill(0);
+let nodes=[]; // {id,type:'IN'|'OUT'|gate, x,y, el, ports:{in:[els],out:el}, value(for IN)}
+let wires=[]; // {from:{node,'out'}, to:{node,idx}, el}
+let nid=0;
+const $=id=>document.getElementById(id);
+const canvas=$('canvas'), svg=$('svg');
+
+/* ===================== SESTAVENÍ ÚROVNĚ ===================== */
+function loadLevel(i){
+  cur=i; const L=LEVELS[i];
+  nodes=[]; wires=[]; nid=0;
+  [...canvas.querySelectorAll('.node,.io')].forEach(e=>e.remove());
+  svg.innerHTML='';
+  $('lvNum').textContent=i+1;
+  $('lvGoal').innerHTML='<b>'+L.title+'</b> — '+L.goal;
+  $('hint').textContent='💡 '+L.hint;
+  clearResult();
+  renderDots(); renderPalette(); renderTruth();
+
+  const H=canvas.clientHeight||440;
+  // input nodes on the left
+  L.inputs.forEach((lab,k)=>{
+    const y=40+ k*(H-80)/Math.max(1,L.inputs.length-0.001)/1 ;
+    addIO('IN',lab, 14, 30 + k*70);
+  });
+  // output nodes on the right
+  const cw=canvas.clientWidth;
+  L.outputs.forEach((lab,k)=>{
+    addIO('OUT',lab, cw-84, 30 + k*70);
+  });
+  redraw();
+}
+
+function addIO(kind, label, x, y){
+  const node={id:'n'+(nid++), type:kind, label, x, y, value:0, inWire:null};
+  const el=document.createElement('div'); el.className='io'; el.style.left=x+'px'; el.style.top=y+'px';
+  if(kind==='IN'){
+    const sw=document.createElement('div'); sw.className='switch'; sw.innerHTML='<div class="k"></div>';
+    const lb=document.createElement('div'); lb.className='iolabel'; lb.textContent=label;
+    const port=mkPort('out',node,0);
+    el.appendChild(lb); el.appendChild(sw); el.appendChild(port);
+    port.style.position='relative'; port.style.left='0'; port.style.marginLeft='4px';
+    sw.addEventListener('click',()=>{ node.value=node.value?0:1; sw.classList.toggle('on',!!node.value); evalLive(); });
+    node.portOut=port;
+  }else{
+    const lamp=document.createElement('div'); lamp.className='lamp';
+    const lb=document.createElement('div'); lb.className='outlabel'; lb.style.color='var(--amber)'; lb.textContent=label;
+    const port=mkPort('in',node,0);
+    port.style.position='relative'; port.style.left='0'; port.style.marginRight='4px';
+    el.appendChild(port); el.appendChild(lamp); el.appendChild(lb);
+    node.lamp=lamp; node.portsIn=[port];
+  }
+  node.el=el; canvas.appendChild(el); nodes.push(node);
+  makeDraggable(node);
+  return node;
+}
+
+function addGate(type){
+  const g=GATE[type];
+  const node={id:'n'+(nid++), type, x:180+ (nodes.length%4)*20, y:60+ (nodes.length%5)*30, portsIn:[], inWire:[]};
+  const el=document.createElement('div'); el.className='node'; el.style.left=node.x+'px'; el.style.top=node.y+'px';
+  el.style.width='74px'; el.style.height=(g.ar===2?54:44)+'px';
+  el.innerHTML='<span>'+type+'</span><div class="gx">✕</div>';
+  // input ports
+  for(let k=0;k<g.ar;k++){
+    const p=mkPort('in',node,k);
+    p.style.top=(g.ar===2? (k===0?12:32) : 15)+'px';
+    el.appendChild(p); node.portsIn.push(p);
+  }
+  const po=mkPort('out',node,0); po.style.top=((g.ar===2?54:44)/2-7)+'px';
+  el.appendChild(po); node.portOut=po;
+  el.querySelector('.gx').addEventListener('pointerdown',e=>{e.stopPropagation();});
+  el.querySelector('.gx').addEventListener('click',e=>{ e.stopPropagation(); removeNode(node); });
+  node.el=el; canvas.appendChild(el); nodes.push(node);
+  makeDraggable(node);
+  redraw(); evalLive();
+  return node;
+}
+
+function mkPort(kind,node,idx){
+  const p=document.createElement('div'); p.className='port '+kind;
+  p.dataset.port=kind; p.dataset.node=node.id; p.dataset.idx=idx;
+  p.addEventListener('pointerdown',e=>startWire(e,node,kind,idx));
+  return p;
+}
+
+/* ===================== DRAG HRADEL ===================== */
+function makeDraggable(node){
+  const el=node.el;
+  el.addEventListener('pointerdown',e=>{
+    if(e.target.classList.contains('port')||e.target.classList.contains('gx')||e.target.classList.contains('switch')||e.target.closest('.switch')) return;
+    if(node.type==='IN'||node.type==='OUT') { /* io draggable too */ }
+    e.preventDefault();
+    const r=canvas.getBoundingClientRect();
+    const ox=e.clientX-r.left-node.x, oy=e.clientY-r.top-node.y;
+    el.setPointerCapture(e.pointerId); el.style.cursor='grabbing';
+    const mv=ev=>{ node.x=ev.clientX-r.left-ox; node.y=ev.clientY-r.top-oy;
+      node.x=Math.max(0,Math.min(node.x, r.width-40)); node.y=Math.max(0,Math.min(node.y, r.height-30));
+      el.style.left=node.x+'px'; el.style.top=node.y+'px'; redraw(); };
+    const up=()=>{ el.releasePointerCapture(e.pointerId); el.style.cursor='grab'; document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up); };
+    document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up);
+  });
+}
+
+/* ===================== KRESLENÍ DRÁTŮ ===================== */
+let pending=null, tempPath=null;
+function startWire(e,node,kind,idx){
+  e.preventDefault(); e.stopPropagation();
+  pending={node,kind,idx};
+  tempPath=document.createElementNS('http://www.w3.org/2000/svg','path');
+  tempPath.setAttribute('class','wire'); tempPath.setAttribute('stroke','var(--cyan)'); tempPath.setAttribute('stroke-width','3'); tempPath.setAttribute('fill','none');
+  svg.appendChild(tempPath);
+  const mv=ev=>{ const r=canvas.getBoundingClientRect(); const p=portCenter(portEl(node,kind,idx));
+    tempPath.setAttribute('d', curve(p.x,p.y, ev.clientX-r.left, ev.clientY-r.top)); };
+  const up=ev=>{
+    document.removeEventListener('pointermove',mv); document.removeEventListener('pointerup',up);
+    const tgt=document.elementFromPoint(ev.clientX,ev.clientY);
+    const port=tgt&&tgt.closest? tgt.closest('.port'):null;
+    if(port){ tryConnect(pending, {node:nodeById(port.dataset.node), kind:port.dataset.port, idx:+port.dataset.idx}); }
+    if(tempPath){ tempPath.remove(); tempPath=null; } pending=null; redraw(); evalLive();
+  };
+  document.addEventListener('pointermove',mv); document.addEventListener('pointerup',up);
+}
+
+function tryConnect(a,b){
+  // normalize to out->in
+  let out,inn;
+  if(a.kind==='out'&&b.kind==='in'){ out=a; inn=b; }
+  else if(a.kind==='in'&&b.kind==='out'){ out=b; inn=a; }
+  else return; // same kind, invalid
+  if(out.node===inn.node) return;
+  // one wire per input port: remove existing
+  wires=wires.filter(w=>!(w.to.node===inn.node && w.to.idx===inn.idx));
+  wires.push({from:{node:out.node}, to:{node:inn.node, idx:inn.idx}});
+}
+
+function portEl(node,kind,idx){ return kind==='out'? node.portOut : node.portsIn[idx]; }
+function portCenter(el){ const r=el.getBoundingClientRect(), c=canvas.getBoundingClientRect();
+  return {x:r.left-c.left+r.width/2, y:r.top-c.top+r.height/2}; }
+function curve(x1,y1,x2,y2){ const dx=Math.max(30,Math.abs(x2-x1)/2); return `M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}`; }
+function nodeById(id){ return nodes.find(n=>n.id===id); }
+
+function redraw(){
+  // keep temp path, remove wire paths
+  [...svg.querySelectorAll('path.wire:not(.temp)')].forEach(p=>{ if(p!==tempPath) p.remove(); });
+  svg.innerHTML=''; if(tempPath) svg.appendChild(tempPath);
+  wires.forEach(w=>{
+    const a=portCenter(w.from.node.portOut), b=portCenter(w.to.node.portsIn[w.to.idx]);
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('class','wire'); path.setAttribute('d',curve(a.x,a.y,b.x,b.y));
+    path.setAttribute('stroke', w.on?'var(--on)':'var(--wire)'); path.setAttribute('stroke-width', w.on?'4':'3'); path.setAttribute('fill','none');
+    path.addEventListener('click',()=>{ wires=wires.filter(x=>x!==w); redraw(); evalLive(); });
+    svg.appendChild(path);
+  });
+}
+
+function removeNode(node){
+  wires=wires.filter(w=>w.from.node!==node && w.to.node!==node);
+  node.el.remove(); nodes=nodes.filter(n=>n!==node);
+  redraw(); evalLive();
+}
+function clearGates(){
+  nodes.filter(n=>GATE[n.type]).forEach(n=>n.el.remove());
+  nodes=nodes.filter(n=>!GATE[n.type]);
+  wires=wires.filter(w=>GATE[w.from.node.type]?false:(GATE[w.to.node.type]?false:true));
+  redraw(); evalLive();
+}
+
+/* ===================== VYHODNOCENÍ ===================== */
+function evaluate(inputVals){
+  // inputVals: array aligned with LEVELS[cur].inputs
+  const L=LEVELS[cur];
+  const inNodes=nodes.filter(n=>n.type==='IN');
+  inNodes.forEach((n,k)=>{ n._sig=inputVals[k]; });
+  nodes.filter(n=>n.type!=='IN').forEach(n=>n._sig=undefined);
+  const sigOf=node=>node._sig;
+  const inputSignal=(node,idx)=>{ const w=wires.find(w=>w.to.node===node&&w.to.idx===idx); return w? (w.from.node._sig??0) : 0; };
+  // iterate to settle (acyclic converges quickly)
+  for(let pass=0; pass<40; pass++){
+    let changed=false;
+    nodes.forEach(node=>{
+      if(node.type==='IN') return;
+      if(GATE[node.type]){
+        const g=GATE[node.type];
+        const a=inputSignal(node,0); const b=g.ar===2?inputSignal(node,1):0;
+        const v=g.ar===1?g.fn(a):g.fn(a,b);
+        if(node._sig!==v){ node._sig=v; changed=true; }
+      }else if(node.type==='OUT'){
+        const v=inputSignal(node,0);
+        if(node._sig!==v){ node._sig=v; changed=true; }
+      }
+    });
+    if(!changed) break;
+  }
+  const outNodes=nodes.filter(n=>n.type==='OUT');
+  return outNodes.map(n=>n._sig??0);
+}
+
+function evalLive(){
+  const L=LEVELS[cur];
+  const inNodes=nodes.filter(n=>n.type==='IN');
+  const vals=inNodes.map(n=>n.value||0);
+  const outs=evaluate(vals);
+  // light nodes/ports/wires
+  nodes.forEach(n=>{ if(n.portOut) n.portOut.classList.toggle('on', (n._sig||0)===1);
+    (n.portsIn||[]).forEach((p,idx)=>{ const w=wires.find(w=>w.to.node===n&&w.to.idx===idx); p.classList.toggle('on', w? ((w.from.node._sig||0)===1):false); }); });
+  wires.forEach(w=> w.on=(w.from.node._sig||0)===1);
+  nodes.filter(n=>n.type==='OUT').forEach((n)=> n.lamp.classList.toggle('on',(n._sig||0)===1));
+  redraw();
+}
+
+/* ===================== KONTROLA ===================== */
+function combos(n){ const out=[]; for(let m=0;m<(1<<n);m++){ const a=[]; for(let k=0;k<n;k++) a.push((m>>k)&1); out.push(a);} return out; }
+
+function check(){
+  const L=LEVELS[cur];
+  const cs=combos(L.inputs.length);
+  let allOk=true, firstBad=null;
+  for(const c of cs){
+    const got=evaluate(c);
+    const exp=L.truth(c);
+    if(got.length!==exp.length || !exp.every((v,i)=>v===got[i])){ allOk=false; if(!firstBad) firstBad={c,got,exp}; }
+  }
+  // restore live view to current toggles
+  evalLive();
+  const r=$('result');
+  if(allOk){
+    const gates=nodes.filter(n=>GATE[n.type]).length;
+    r.className='result ok';
+    r.innerHTML='✅ Funguje správně! Použil jsi '+gates+' hradel. '+(cur<LEVELS.length-1?'<span class="link" onclick="nextLevel()">Další úroveň →</span>':'🎉 Postavil jsi plnou sčítačku!');
+    if(!solved[cur]){ solved[cur]=true; } usedGates[cur]=gates; // keep best? store latest (fewer if re-solved)
+    renderDots(); submitProgress(solved.every(x=>x));
+    if(solved.every(x=>x)) showDone();
+  }else{
+    r.className='result no';
+    const fb=firstBad;
+    r.innerHTML='❌ Zatím ne. Např. pro vstupy '+L.inputs.map((n,i)=>n+'='+fb.c[i]).join(', ')+
+      ' má vyjít <b>'+fb.exp.join(', ')+'</b>, ale vyšlo <b>'+fb.got.join(', ')+'</b>.';
+  }
+}
+
+/* ===================== UI ===================== */
+function renderDots(){ const d=$('dots'); d.innerHTML='';
+  LEVELS.forEach((_,i)=>{ const e=document.createElement('div'); e.className='d'+(solved[i]?' done':i===cur?' cur':''); d.appendChild(e); }); }
+function renderPalette(){ const p=$('palette'); p.innerHTML='';
+  LEVELS[cur].palette.forEach(t=>{ const b=document.createElement('div'); b.className='pbtn'; b.textContent='+ '+t;
+    b.addEventListener('click',()=>addGate(t)); p.appendChild(b); }); }
+function renderTruth(){ const L=LEVELS[cur]; const cs=combos(L.inputs.length);
+  let html='<table><tr>'+L.inputs.map(x=>'<th>'+x+'</th>').join('')+L.outputs.map(x=>'<th>'+x+'</th>').join('')+'</tr>';
+  cs.forEach(c=>{ const o=L.truth(c); html+='<tr>'+c.map(v=>'<td>'+v+'</td>').join('')+o.map(v=>'<td class="o">'+v+'</td>').join('')+'</tr>'; });
+  html+='</table>'; $('truth').innerHTML=html; }
+function clearResult(){ const r=$('result'); r.className='result'; r.innerHTML=''; }
+function nextLevel(){ if(cur<LEVELS.length-1){ loadLevel(cur+1); window.scrollTo(0,0);} }
+
+function showDone(){ const total=usedGates.reduce((a,b)=>a+b,0);
+  const code='LOG-'+String(LEVELS.length).padStart(2,'0')+'-'+String(total).padStart(3,'0');
+  const b=$('doneBanner'); b.style.display='block';
+  b.innerHTML='🏆 <b>Hotovo! Postavil jsi celou cestu od hradla ke sčítačce.</b><br><span style="color:var(--muted);font-size:13px">Celkem hradel: '+total+' (méně = elegantnější)</span><br>Kód pro učitele: <span class="code">'+code+'</span>'; }
+
+/* ===================== ŽEBŘÍČEK ===================== */
+const FB='https://letni-skola-hry-default-rtdb.firebaseio.com';
+const SID='l_'+Math.random().toString(36).slice(2,10);
+function submitProgress(done){
+  const name=($('playerName').value||'').trim().slice(0,24); if(!name) return;
+  const levels=solved.filter(Boolean).length;
+  const gates=usedGates.reduce((a,b)=>a+b,0);
+  fetch(FB+'/scores/'+SID+'.json',{method:'PUT',body:JSON.stringify(
+    {name, game:'logic', levels, gates, done:!!done, ts:Date.now()})}).catch(()=>{});
+}
+
+(function(){ const inp=$('playerName');
+  try{ const s=localStorage.getItem('ls_playerName'); if(s) inp.value=s; }catch(e){}
+  inp.addEventListener('input',()=>{ try{localStorage.setItem('ls_playerName',inp.value);}catch(e){}
+    if(inp.value.trim()) submitProgress(solved.every(x=>x)); });
+})();
+
+window.addEventListener('resize',()=>redraw());
+loadLevel(0);
+</script>
+</body>
+</html>
