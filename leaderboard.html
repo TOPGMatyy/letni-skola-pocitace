@@ -105,8 +105,8 @@
 
     <div class="board">
       <h2>🖥️ PC Builder <span class="badge" id="cS2">0</span></h2>
-      <div class="desc">Herní sestavy (kompatibilní). Pořadí: nejvyšší výkon.</div>
-      <table><thead><tr><th class="rank">#</th><th>Jméno</th><th class="num">Výkon</th><th class="num">Cena</th></tr></thead>
+      <div class="desc">2 mise (cena/výkon + nejvýkonnější). Pořadí: víc misí → vyšší výkon.</div>
+      <table><thead><tr><th class="rank">#</th><th>Jméno</th><th class="num">Mise</th><th class="num">Výkon</th></tr></thead>
         <tbody id="tS2"></tbody></table>
       <div class="empty" id="eS2">Zatím nikdo nesestavil funkční PC.</div>
     </div>
@@ -142,7 +142,7 @@ async function load(){
   proc.sort(by('instr')); exp.sort(by('instr')); logic.sort(by('gates')); diag.sort(by('mistakes'));
   kviz.sort((a,b)=> (b.score-a.score) || (b.correct-a.correct) || (a.ts-b.ts));
   buildr.sort((a,b)=> (b.levels-a.levels) || ((b.saved||0)-(a.saved||0)) || (a.ts-b.ts));
-  sim.sort((a,b)=> (b.score-a.score) || ((a.price||0)-(b.price||0)) || (a.ts-b.ts));
+  sim.sort((a,b)=> (b.levels-a.levels) || (b.score-a.score) || (a.ts-b.ts));
 
   renderBoard('tP','eP',proc,'instr');
   renderBoard('tX','eX',exp,'instr');
@@ -197,9 +197,9 @@ function renderSim(tbId, eId, list){
   e.style.display=list.length?'none':'block';
   tb.innerHTML=list.map((r,i)=>`<tr class="${medal[i]||''}">
     <td class="rank">${i+1}</td>
-    <td class="name">${esc(r.name)}</td>
-    <td class="num">${r.score||0}/100</td>
-    <td class="num">${(r.price||0).toLocaleString('cs-CZ')} Kč</td></tr>`).join('');
+    <td class="name">${esc(r.name)}${r.done?'<span class="done-pill">2/2</span>':''}</td>
+    <td class="num">${r.levels||0}/2</td>
+    <td class="num">${r.score||0}/100</td></tr>`).join('');
 }
 
 async function clearAll(){
