@@ -83,6 +83,7 @@
     <div class="tab" data-t="monitor">🖥️ Monitor</div>
     <div class="tab" data-t="speaker">🔊 Reproduktor</div>
     <div class="tab" data-t="mouse">🖱️ Myši</div>
+    <div class="tab" data-t="data">🎨 Barvy &amp; data</div>
   </div>
 
   <!-- ============ PRINTER ============ -->
@@ -192,6 +193,15 @@
         </div>
       </div>
       <p style="font-size:13.5px;color:var(--muted);margin:6px 0 0">Víc pixelů (megapixelů) = víc detailů. Se zapnutou maskou uvidíš, že senzor „vidí" jen červené, zelené a modré body – barevná fotka vzniká teprve jejich složením.</p>
+    </div>
+
+    <div class="card">
+      <h3>💾 RAW vs. JPEG – v čem fotku uložit</h3>
+      <div class="grid2">
+        <div class="box"><h3 style="color:#7dd3fc">RAW (surová data)</h3><p>Uloží <b class="k">skoro všechna původní data</b> ze senzoru (víc než 8 bitů na kanál). Dá se z něj potom vytáhnout mnohem víc při úpravách (expozice, barvy). Nevýhoda: <b class="w">velký soubor</b> a musí se dodatečně zpracovat.</p></div>
+        <div class="box"><h3 style="color:#fbbf24">JPEG</h3><p>Fotoaparát obraz rovnou <b class="k">zpracuje a zkomprimuje</b> (ztrátově) do malého souboru. Praktické a hned použitelné, ale část informace se <b class="w">nenávratně zahodí</b> a hůř se pak upravuje.</p></div>
+      </div>
+      <div class="did"><b>Zjednodušeně:</b> JPEG = hotová fotka do mobilu. RAW = „negativ" pro pečlivé úpravy na počítači.</div>
     </div>
   </div>
 
@@ -304,6 +314,43 @@
         <tr><td>sklo / zrcadlo</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
       </table>
       <p style="font-size:12.5px;color:var(--muted);margin:8px 0 0">Na skle selže každá optická myš – kamera nemá žádný vzor, který by porovnávala. Pomůže podložka nebo papír.</p>
+    </div>
+  </div>
+
+  <!-- ============ DATA / BARVY ============ -->
+  <div class="panel" id="data">
+    <h2>🎨 Barvy &amp; data – co spojuje všechna zařízení</h2>
+    <p class="lead">Ať jde o fotku, obraz na monitoru nebo tisk, všechno jsou nakonec <b>čísla</b> a <b>body</b>. Tady je základ, který se hodí ke všem předchozím tématům.</p>
+
+    <div class="card">
+      <h3>🔢 Bity, bajty a jak se ukládá barva</h3>
+      <ol class="steps">
+        <li><b class="k">Bit</b> je nejmenší jednotka – buď <b class="w">0, nebo 1</b>.</li>
+        <li><b class="k">Bajt (byte) = 8 bitů.</b> Osmi bity se dá zapsat <b class="w">2⁸ = 256</b> různých hodnot (např. 0–255).</li>
+        <li>Jeden barevný kanál (R, G nebo B) se běžně ukládá do <b class="k">1 bajtu → hodnoty 0–255</b>. Proto vidíš u barev čísla do 255.</li>
+        <li>Tři kanály (R+G+B) po 8 bitech = 24 bitů na pixel = <b class="w">~16,7 milionu barev</b>.</li>
+      </ol>
+      <div class="did"><b>Věděl jsi?</b> 8 bitů = 256 úrovní je i důvod, proč má každý subpixel monitoru a každá hodnota z fotoaparátu rozsah 0–255.</div>
+    </div>
+
+    <div class="card">
+      <h3>➕➖ Aditivní vs. subtraktivní míchání</h3>
+      <div class="grid2">
+        <div class="box"><h3 style="color:#7dd3fc">Aditivní – RGB (světlo)</h3><p>Monitor světlo <b class="k">vyzařuje a přidává</b>. R+G+B naplno = <b class="w">bílá</b>, všechny zhasnuté = <b>černá</b>. Používá ho monitor, senzor, projektor.</p></div>
+        <div class="box"><h3 style="color:#fbbf24">Subtraktivní – CMY (barvivo)</h3><p>Inkoust na papíře světlo <b class="k">pohlcuje (ubírá)</b>. Čím víc barev přidáš, tím tmavší → k <b class="w">černé</b>. Používá ho tiskárna (CMYK).</p></div>
+      </div>
+      <div class="why"><b>Proto</b> monitor míchá barvy z R, G, B, ale tiskárna z azurové, purpurové a žluté – papír totiž sám nesvítí a barvu jen odráží.</div>
+    </div>
+
+    <div class="card">
+      <h3>🧩 Stejný princip, jiná role</h3>
+      <table class="cmp">
+        <tr><th>Zařízení</th><th>Co dělá s barvou</th><th>Z čeho skládá obraz</th></tr>
+        <tr><td>📷 Senzor foťáku</td><td>barvu <b class="k">měří</b> (přes filtr R/G/B)</td><td>mřížka pixelů (buněk)</td></tr>
+        <tr><td>🖥️ Monitor</td><td>barvu <b class="k">svítí</b> (R/G/B subpixely)</td><td>mřížka pixelů</td></tr>
+        <tr><td>🖨️ Tiskárna</td><td>barvu <b class="k">skládá z bodů</b> (CMYK, rastr)</td><td>drobné kapky/body</td></tr>
+      </table>
+      <div class="did"><b>Rozdíl „subpixel" vs. „bod":</b> displej a senzor mají <b>pevnou mřížku</b> R/G/B prvků (subpixelů) na každý pixel. Tiskárna nemá „poloviční kapku" – odstín tvoří tím, <b class="w">jak hustě</b> rozmístí malé plné body jednotlivých inkoustů (polotónování/rastr).</div>
     </div>
   </div>
 
