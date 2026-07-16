@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Postav si počítač – kompatibilita</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  :root{--bg:#0b1220;--card:#131f36;--card2:#1c2c4a;--line:#2a3c5e;--cyan:#38bdf8;--good:#22c55e;--bad:#ef4444;--amber:#fbbf24;--purple:#a78bfa;--text:#e6edf7;--muted:#93a4bd;}
+  html,body{margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:radial-gradient(circle at 50% -10%,#16233f,#0b1220 65%);color:var(--text);min-height:100vh;line-height:1.5;}
+  .wrap{max-width:820px;margin:0 auto;padding:14px 12px 60px;}
+  h1{font-size:22px;text-align:center;margin:6px 0 2px;}
+  .sub{text-align:center;color:var(--muted);font-size:13px;margin-bottom:12px;}
+  .name{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--card2);color:var(--text);font-size:15px;margin-bottom:12px;}
+
+  .dots{display:flex;gap:6px;justify-content:center;margin-bottom:10px;}
+  .dots .d{padding:3px 10px;border-radius:8px;background:#22314e;font-size:12px;font-weight:700;color:var(--muted);}
+  .dots .d.done{background:var(--good);color:#04121f;}
+
+  .scen{display:grid;grid-template-columns:1fr;gap:12px;}
+  @media(min-width:640px){.scen{grid-template-columns:1fr 1fr 1fr;}}
+  .scard{background:var(--card);border-radius:16px;padding:16px;cursor:pointer;border:1px solid var(--line);transition:border-color .15s;}
+  .scard:hover{border-color:var(--cyan);}
+  .scard.done{border-color:var(--good);}
+  .scard .ic{font-size:34px;}
+  .scard h3{margin:6px 0 4px;font-size:18px;}
+  .scard .bud{color:var(--amber);font-weight:800;font-size:15px;}
+  .scard p{color:var(--muted);font-size:13px;margin:6px 0 0;}
+  .scard .badge{display:inline-block;margin-top:8px;font-size:12px;font-weight:800;color:var(--good);}
+
+  .hidden{display:none;}
+  .topbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--card);border-radius:12px;padding:10px 12px;margin-bottom:10px;}
+  .topbar .t{flex:1;font-weight:800;font-size:16px;}
+  .pill{background:var(--card2);border-radius:8px;padding:5px 10px;font-size:13px;font-weight:700;}
+  .pill b{font-variant-numeric:tabular-nums;}
+  .pill.ok{color:var(--good);} .pill.bad{color:var(--bad);}
+  .link{color:var(--cyan);cursor:pointer;text-decoration:underline;font-size:13px;}
+
+  .rows{display:flex;flex-direction:column;gap:8px;}
+  .row{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:10px;padding:8px 10px;}
+  .row .lab{width:120px;font-weight:700;font-size:13px;color:var(--cyan);flex-shrink:0;}
+  .row select{flex:1;background:#0a1120;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px;font-size:13.5px;}
+  @media(max-width:520px){.row{flex-wrap:wrap}.row .lab{width:100%}}
+
+  .checks{background:var(--card);border-radius:12px;padding:12px;margin-top:10px;}
+  .checks h4{margin:0 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+  .chk{font-size:13.5px;padding:4px 0;display:flex;gap:8px;align-items:flex-start;}
+  .chk.ok{color:#bbf7d0;} .chk.bad{color:#fecaca;} .chk.wait{color:var(--muted);}
+  .btns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .btn{flex:1;min-width:120px;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:800;cursor:pointer;color:#04121f;background:linear-gradient(180deg,#86efac,#22c55e);}
+  .btn.s{background:var(--card2);color:var(--text);}
+  .btn:active{transform:translateY(1px);}
+  .result{margin-top:10px;border-radius:10px;padding:12px 14px;font-weight:700;font-size:14px;display:none;}
+  .result.ok{display:block;background:#12351f;border:1px solid var(--good);color:#d7f7e0;}
+  .result.no{display:block;background:#3a1618;border:1px solid var(--bad);color:#fde2e2;}
+  .done-banner{background:linear-gradient(180deg,#134e2a,#0b1220);border:1px solid var(--good);border-radius:14px;padding:16px;text-align:center;margin-bottom:12px;display:none;}
+  .done-banner .code{font-family:monospace;font-size:22px;font-weight:800;color:var(--amber);letter-spacing:2px;}
+  .hint{color:var(--muted);font-size:12px;text-align:center;margin-top:12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧰 Postav si počítač</h1>
+  <div class="sub">Vyber 3 sestavy podle zadání. Hlídej socket, typ RAM, watty zdroje, velikost skříně i rozpočet – ať to všechno pasuje!</div>
+  <input id="playerName" class="name" placeholder="Tvoje jméno / přezdívka (pro žebříček)">
+  <div class="dots" id="dots"></div>
+  <div class="done-banner" id="doneBanner"></div>
+
+  <!-- SCÉNÁŘE -->
+  <div id="scenScreen">
+    <div class="scen" id="scen"></div>
+    <div class="hint">Klikni na zadání a postav mu počítač od základu.</div>
+  </div>
+
+  <!-- STAVBA -->
+  <div id="buildScreen" class="hidden">
+    <div class="topbar">
+      <span class="t" id="bTitle"></span>
+      <span class="pill" id="pPrice">Cena: 0</span>
+      <span class="pill" id="pPower">Příkon: 0 W</span>
+      <span class="link" onclick="backToScen()">← zpět na zadání</span>
+    </div>
+    <div class="rows" id="rows"></div>
+    <div class="checks">
+      <h4>Kontrola kompatibility a zadání</h4>
+      <div id="checkList"></div>
+    </div>
+    <div class="btns">
+      <button class="btn" onclick="finish()">✅ Dokončit sestavu</button>
+      <button class="btn s" onclick="resetBuild()">🧹 Vyčistit</button>
+    </div>
+    <div class="result" id="result"></div>
+  </div>
+
+  <div class="hint">Tip: menší f… ne, to je foťák 😄 Tady platí: socket CPU musí sedět s deskou, RAM se řídí deskou (DDR4/DDR5), zdroj musí mít dost wattů.</div>
+</div>
+
+<script>
+/* ================= KOMPONENTY ================= */
+const KČ = n => n.toLocaleString('cs-CZ')+' Kč';
+const CPU=[
+  {id:'i3',   name:'Intel Core i3-12100', socket:'LGA1700', tier:35, tdp:60, igpu:true,  price:2800},
+  {id:'i5',   name:'Intel Core i5-12400', socket:'LGA1700', tier:55, tdp:65, igpu:true,  price:4500},
+  {id:'i7',   name:'Intel Core i7-13700', socket:'LGA1700', tier:88, tdp:90, igpu:true,  price:9500},
+  {id:'r5a4', name:'AMD Ryzen 5 5600',    socket:'AM4',     tier:55, tdp:65, igpu:false, price:3200},
+  {id:'r7a5', name:'AMD Ryzen 7 7700',    socket:'AM5',     tier:85, tdp:65, igpu:true,  price:8500},
+  {id:'r9a5', name:'AMD Ryzen 9 7900',    socket:'AM5',     tier:100,tdp:90, igpu:true,  price:12500},
+];
+const MB=[
+  {id:'a320', name:'Deska A320 (mATX)',  socket:'AM4',     ram:'DDR4', form:'mATX', price:1500},
+  {id:'b550', name:'Deska B550 (ATX)',   socket:'AM4',     ram:'DDR4', form:'ATX',  price:2800},
+  {id:'b650', name:'Deska B650 (ATX)',   socket:'AM5',     ram:'DDR5', form:'ATX',  price:4500},
+  {id:'b660', name:'Deska B660 (ATX)',   socket:'LGA1700', ram:'DDR4', form:'ATX',  price:3200},
+  {id:'z790', name:'Deska Z790 (ATX)',   socket:'LGA1700', ram:'DDR5', form:'ATX',  price:6000},
+];
+const RAM=[
+  {id:'d4_8',  name:'8 GB DDR4',  type:'DDR4', cap:8,  price:700},
+  {id:'d4_16', name:'16 GB DDR4', type:'DDR4', cap:16, price:1300},
+  {id:'d4_32', name:'32 GB DDR4', type:'DDR4', cap:32, price:2400},
+  {id:'d5_16', name:'16 GB DDR5', type:'DDR5', cap:16, price:1800},
+  {id:'d5_32', name:'32 GB DDR5', type:'DDR5', cap:32, price:3200},
+];
+const GPU=[
+  {id:'igpu', name:'Integrovaná grafika (žádná karta)', tier:20, power:0,  price:0, integ:true},
+  {id:'g1650',name:'GTX 1650',  tier:35,  power:75,  price:4000},
+  {id:'g4060',name:'RTX 4060',  tier:65,  power:115, price:8000},
+  {id:'g4070',name:'RTX 4070',  tier:85,  power:200, price:14000},
+  {id:'g4080',name:'RTX 4080',  tier:100, power:320, price:28000},
+];
+const STO=[
+  {id:'ssd500',name:'SSD 500 GB', kind:'SSD', cap:500,  price:800},
+  {id:'ssd1t', name:'SSD 1 TB',   kind:'SSD', cap:1000, price:1400},
+  {id:'ssd2t', name:'SSD 2 TB',   kind:'SSD', cap:2000, price:2500},
+  {id:'hdd2t', name:'HDD 2 TB',   kind:'HDD', cap:2000, price:1000},
+];
+const PSU=[
+  {id:'w400', name:'Zdroj 400 W', watts:400,  price:800},
+  {id:'w550', name:'Zdroj 550 W', watts:550,  price:1100},
+  {id:'w750', name:'Zdroj 750 W', watts:750,  price:1600},
+  {id:'w1000',name:'Zdroj 1000 W',watts:1000, price:2600},
+];
+const CASE=[
+  {id:'micro', name:'Micro skříň (mATX)',       supports:['mATX'],        price:900},
+  {id:'midi',  name:'Midi Tower (ATX + mATX)',  supports:['ATX','mATX'],  price:1400},
+  {id:'full',  name:'Full Tower (ATX + mATX)',  supports:['ATX','mATX'],  price:2200},
+];
+const COOL=[
+  {id:'box', name:'Boxový chladič (k CPU)', sockets:['LGA1700','AM4','AM5'], price:300, weak:true},
+  {id:'intel',name:'Vzduchový chladič – Intel', sockets:['LGA1700'], price:900},
+  {id:'amd', name:'Vzduchový chladič – AMD',    sockets:['AM4','AM5'], price:900},
+  {id:'aio', name:'Vodní chladič AIO (univerzální)', sockets:['LGA1700','AM4','AM5'], price:2000},
+];
+const CATS=[
+  {key:'cpu', lab:'Procesor', list:CPU},
+  {key:'mb',  lab:'Deska',    list:MB},
+  {key:'ram', lab:'Paměť RAM',list:RAM},
+  {key:'gpu', lab:'Grafika',  list:GPU},
+  {key:'sto', lab:'Úložiště', list:STO},
+  {key:'psu', lab:'Zdroj',    list:PSU},
+  {key:'case',lab:'Skříň',    list:CASE},
+  {key:'cool',lab:'Chladič',  list:COOL},
+];
+
+/* ================= ZADÁNÍ ================= */
+const SCEN=[
+  {id:'office', ic:'🏢', name:'Kancelářský PC', budget:16000,
+    goal:'Levný a spolehlivý na kancelář, web a Office. Grafika stačí integrovaná.',
+    req:(b)=>{const r=[]; r.push([b.ram&&b.ram.cap>=8,'Aspoň 8 GB RAM']); r.push([b.sto,'Nějaké úložiště']); return r;}},
+  {id:'gaming', ic:'🎮', name:'Herní PC', budget:38000,
+    goal:'Zvládne moderní hry v pěkných detailech. Potřebuje výkonnou grafiku a slušný procesor.',
+    req:(b)=>{const r=[]; r.push([b.gpu&&b.gpu.tier>=60,'Výkonná grafika (aspoň RTX 4060)']); r.push([b.cpu&&b.cpu.tier>=50,'Slušný procesor (aspoň i5 / Ryzen 5)']); r.push([b.ram&&b.ram.cap>=16,'Aspoň 16 GB RAM']); return r;}},
+  {id:'edit', ic:'🎬', name:'Střihový / pracovní PC', budget:52000,
+    goal:'Střih videa a náročná práce – hodně jader, hodně paměti a rychlý disk.',
+    req:(b)=>{const r=[]; r.push([b.cpu&&b.cpu.tier>=80,'Silný procesor (aspoň i7 / Ryzen 7)']); r.push([b.ram&&b.ram.cap>=32,'Aspoň 32 GB RAM']); r.push([b.sto&&b.sto.kind==='SSD','Rychlé úložiště (SSD)']); r.push([b.gpu&&b.gpu.tier>=60,'Grafika pro střih (aspoň RTX 4060)']); return r;}},
+];
+
+/* ================= STAV ================= */
+let done={}, savings={}, curScen=null, build={};
+const $=id=>document.getElementById(id);
+
+function renderScen(){
+  const s=$('scen'); s.innerHTML='';
+  SCEN.forEach(sc=>{ const el=document.createElement('div'); el.className='scard'+(done[sc.id]?' done':'');
+    el.innerHTML=`<div class="ic">${sc.ic}</div><h3>${sc.name}</h3><div class="bud">Rozpočet: ${KČ(sc.budget)}</div><p>${sc.goal}</p>`+
+      (done[sc.id]?`<div class="badge">✅ hotovo · ušetřeno ${KČ(savings[sc.id]||0)}</div>`:'');
+    el.addEventListener('click',()=>openBuild(sc)); s.appendChild(el); });
+  renderDots();
+}
+function renderDots(){ const d=$('dots'); d.innerHTML='';
+  SCEN.forEach(sc=>{ const e=document.createElement('div'); e.className='d'+(done[sc.id]?' done':''); e.textContent=sc.ic+' '+(done[sc.id]?'✓':'…'); d.appendChild(e); }); }
+
+function openBuild(sc){
+  curScen=sc; build={};
+  $('scenScreen').classList.add('hidden'); $('buildScreen').classList.remove('hidden');
+  $('bTitle').textContent=sc.ic+' '+sc.name+' · '+KČ(sc.budget);
+  const rows=$('rows'); rows.innerHTML='';
+  CATS.forEach(cat=>{ const row=document.createElement('div'); row.className='row';
+    let opts='<option value="">– vyber '+cat.lab.toLowerCase()+' –</option>';
+    cat.list.forEach(c=>opts+=`<option value="${c.id}">${c.name} — ${KČ(c.price)}</option>`);
+    row.innerHTML=`<span class="lab">${cat.lab}</span><select data-cat="${cat.key}">${opts}</select>`;
+    row.querySelector('select').addEventListener('change',e=>{ build[cat.key]=cat.list.find(c=>c.id===e.target.value)||null; update(); });
+    rows.appendChild(row); });
+  $('result').className='result';
+  update();
+}
+function backToScen(){ $('buildScreen').classList.add('hidden'); $('scenScreen').classList.remove('hidden'); renderScen(); }
+function resetBuild(){ openBuild(curScen); }
+
+/* ================= KONTROLA ================= */
+function checks(){
+  const b=build, out=[];
+  const price=CATS.reduce((s,c)=>s+(b[c.key]?b[c.key].price:0),0);
+  // 1 vše vybráno
+  const missing=CATS.filter(c=>!b[c.key]).map(c=>c.lab);
+  out.push({ok:missing.length===0, wait:missing.length>0, msg: missing.length? 'Ještě chybí: '+missing.join(', ') : 'Všechny komponenty vybrané'});
+  // 2 socket
+  if(b.cpu&&b.mb) out.push({ok:b.cpu.socket===b.mb.socket, msg: b.cpu.socket===b.mb.socket? `Socket sedí (${b.cpu.socket})` : `❌ Procesor (${b.cpu.socket}) nepasuje do desky (${b.mb.socket})`});
+  // 3 RAM typ
+  if(b.ram&&b.mb) out.push({ok:b.ram.type===b.mb.ram, msg: b.ram.type===b.mb.ram? `RAM ${b.ram.type} sedí do desky` : `❌ RAM ${b.ram.type} nepasuje do desky s ${b.mb.ram}`});
+  // 4 skříň / form factor
+  if(b.mb&&b.case) out.push({ok:b.case.supports.includes(b.mb.form), msg: b.case.supports.includes(b.mb.form)? `Deska ${b.mb.form} se vejde do skříně` : `❌ Deska ${b.mb.form} se nevejde do této skříně`});
+  // 5 chladič
+  if(b.cpu&&b.cool) out.push({ok:b.cool.sockets.includes(b.cpu.socket), msg: b.cool.sockets.includes(b.cpu.socket)? `Chladič pasuje na ${b.cpu.socket}` : `❌ Chladič nepasuje na socket ${b.cpu.socket}`});
+  // 6 integrovaná grafika jen s iGPU
+  if(b.gpu&&b.gpu.integ&&b.cpu) out.push({ok:b.cpu.igpu, msg: b.cpu.igpu? 'Procesor má integrovanou grafiku' : '❌ Tento procesor nemá integrovanou grafiku – potřebuješ grafickou kartu'});
+  // 7 zdroj
+  let power=0, needed=0;
+  if(b.cpu||b.gpu){ power=(b.cpu?b.cpu.tdp:0)+(b.gpu?b.gpu.power:0); needed=power+100; }
+  if(b.psu&&(b.cpu||b.gpu)) out.push({ok:b.psu.watts>=needed, msg: b.psu.watts>=needed? `Zdroj má dost výkonu (${b.psu.watts} W ≥ ~${needed} W)` : `❌ Slabý zdroj: potřeba ~${needed} W, máš ${b.psu.watts} W`});
+  // 8 rozpočet
+  out.push({ok:price<=curScen.budget, msg: price<=curScen.budget? `V rozpočtu (${KČ(price)} / ${KČ(curScen.budget)})` : `❌ Přes rozpočet o ${KČ(price-curScen.budget)}`});
+  // 9 požadavky scénáře
+  curScen.req(b).forEach(([ok,label])=>out.push({ok:!!ok, wait:false, msg: ok? '✔ '+label : '❌ '+label}));
+  return {out, price, power, needed};
+}
+
+function update(){
+  const {out, price, needed}=checks();
+  $('pPrice').textContent='Cena: '+KČ(price);
+  $('pPrice').className='pill '+(price<=curScen.budget?'ok':'bad');
+  $('pPower').textContent='Potřeba: '+(needed||0)+' W';
+  const cl=$('checkList'); cl.innerHTML='';
+  out.forEach(c=>{ const d=document.createElement('div'); d.className='chk '+(c.wait?'wait':c.ok?'ok':'bad');
+    d.innerHTML=(c.wait?'⏳ ':c.ok?'✅ ':'❌ ')+c.msg.replace(/^❌ |^✔ /,''); cl.appendChild(d); });
+}
+
+function finish(){
+  const {out, price}=checks();
+  const allOk=out.every(c=>c.ok);
+  const r=$('result');
+  if(allOk){
+    const left=curScen.budget-price;
+    if(!done[curScen.id]){ done[curScen.id]=true; savings[curScen.id]=Math.max(savings[curScen.id]||0,left); }
+    else { savings[curScen.id]=Math.max(savings[curScen.id]||0,left); }
+    r.className='result ok';
+    const all=SCEN.every(s=>done[s.id]);
+    r.innerHTML=`🎉 <b>Sestava funguje a splňuje zadání!</b> Cena ${KČ(price)}, ušetřil jsi ${KČ(left)}.<br>`+
+      (all?'<b>Postavil jsi všechny 3 počítače!</b>':'<span class="link" onclick="backToScen()">← zpět a postav další</span>');
+    submitProgress(all);
+    if(all) showDone();
+  }else{
+    const bad=out.filter(c=>!c.ok&&!c.wait).length, wait=out.filter(c=>c.wait).length;
+    r.className='result no';
+    r.innerHTML= wait? '⏳ Ještě něco chybí – doplň všechny komponenty.' : `❌ Sestava zatím nesedí – oprav ${bad} ${bad===1?'věc':'věci'} označené červeně nahoře.`;
+  }
+}
+
+function showDone(){ const total=Object.values(savings).reduce((a,b)=>a+b,0);
+  const code='PC-'+Object.keys(done).length+'-'+String(Math.round(total/100)).padStart(3,'0');
+  const b=$('doneBanner'); b.style.display='block';
+  b.innerHTML='🏆 <b>Hotovo! Postavil jsi všechny 3 počítače.</b><br><span style="color:var(--muted);font-size:13px">Celkem ušetřeno: '+KČ(total)+' (čím víc, tím lepší poměr cena/výkon)</span><br>Kód pro učitele: <span class="code">'+code+'</span>'; }
+
+/* ================= ŽEBŘÍČEK ================= */
+const FB='https://letni-skola-hry-default-rtdb.firebaseio.com';
+const SID='b_'+Math.random().toString(36).slice(2,10);
+function submitProgress(all){
+  const name=($('playerName').value||'').trim().slice(0,24); if(!name) return;
+  const builds=Object.keys(done).length;
+  const saved=Object.values(savings).reduce((a,b)=>a+b,0);
+  fetch(FB+'/scores/'+SID+'.json',{method:'PUT',body:JSON.stringify(
+    {name, game:'build', levels:builds, saved, done:!!all, ts:Date.now()})}).catch(()=>{});
+}
+(function(){ const inp=$('playerName');
+  try{ const s=localStorage.getItem('ls_playerName'); if(s) inp.value=s; }catch(e){}
+  inp.addEventListener('input',()=>{ try{localStorage.setItem('ls_playerName',inp.value);}catch(e){}
+    if(inp.value.trim()) submitProgress(false); });
+})();
+
+renderScen();
+</script>
+</body>
+</html>
