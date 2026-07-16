@@ -42,7 +42,7 @@
   .pcard:hover{border-color:var(--cyan);}
   .pcard.sel{border-color:var(--good);background:#13291d;}
   .pcard .brand{font-size:12px;color:var(--purple);font-weight:800;text-transform:uppercase;letter-spacing:.4px;}
-  .pcard .nm{font-weight:800;font-size:15px;margin:2px 0 4px;padding-right:70px;}
+  .pcard .nm{font-weight:800;font-size:15px;margin:2px 0 4px;padding-right:74px;}
   .pcard .spec{font-size:12.5px;color:var(--muted);line-height:1.55;}
   .pcard .spec b{color:var(--text);}
   .pcard .pr{position:absolute;top:12px;right:12px;font-weight:800;color:var(--amber);font-size:14px;}
@@ -64,13 +64,34 @@
   .checkList h4{margin:0 0 8px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
   .chk{font-size:13.5px;padding:5px 0;border-bottom:1px solid #1b2740;} .chk:last-child{border-bottom:none;}
   .chk.ok{color:#bbf7d0;} .chk.bad{color:#fecaca;}
-  .perf{background:var(--card);border-radius:12px;padding:14px;margin-bottom:12px;}
-  .perf h3{margin:0 0 10px;font-size:17px;}
-  .meter{height:26px;background:#0a1120;border-radius:8px;overflow:hidden;border:1px solid var(--line);}
-  .meter>div{height:100%;background:linear-gradient(90deg,#22c55e,#38bdf8,#a78bfa);display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#04121f;font-weight:800;font-size:13px;}
+
+  /* HIGHTECH DASHBOARD */
+  .panel{background:linear-gradient(180deg,#0e1a30,#0a1322);border:1px solid #24405f;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 0 24px rgba(56,189,248,.06) inset;}
+  .panel .ph{font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#7fa8c9;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+  .panel .ph::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);}
+  .scoreBig{display:flex;align-items:baseline;gap:10px;justify-content:center;margin:4px 0 8px;}
+  .scoreBig .n{font-family:"SF Mono",Menlo,Consolas,monospace;font-size:46px;font-weight:800;color:#e6f3ff;text-shadow:0 0 14px rgba(56,189,248,.5);}
+  .scoreBig .m{color:var(--muted);font-size:15px;}
+  .meter{height:26px;background:#081020;border-radius:8px;overflow:hidden;border:1px solid #24405f;}
+  .meter>div{height:100%;background:linear-gradient(90deg,#22c55e,#38bdf8,#a78bfa);display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#04121f;font-weight:800;font-size:13px;transition:width .8s;}
+  .catg{text-align:center;margin-top:10px;font-weight:800;color:var(--cyan);}
   .fps{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;text-align:center;}
-  .fps .f{background:var(--card2);border-radius:10px;padding:10px;}
-  .fps .f .n{font-size:22px;font-weight:800;color:var(--cyan);} .fps .f .l{font-size:11px;color:var(--muted);}
+  .fps .f{background:#0c1a30;border:1px solid #22405f;border-radius:10px;padding:10px;}
+  .fps .f .n{font-family:monospace;font-size:24px;font-weight:800;color:var(--cyan);} .fps .f .l{font-size:11px;color:var(--muted);}
+  .dash{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  @media(min-width:620px){.dash{grid-template-columns:repeat(4,1fr);}}
+  .tile{background:linear-gradient(180deg,#101d33,#0b1526);border:1px solid #24405f;border-radius:12px;padding:11px;position:relative;overflow:hidden;}
+  .tile::after{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(56,189,248,.5),transparent);}
+  .tile .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:#7fa8c9;}
+  .tile .val{font-family:"SF Mono",Menlo,Consolas,monospace;font-size:20px;font-weight:800;color:#e6f3ff;margin-top:3px;line-height:1.15;}
+  .tile .val small{font-size:11px;color:#7fa8c9;font-weight:600;}
+  .tile .bar{height:6px;background:#081020;border-radius:4px;margin-top:8px;overflow:hidden;}
+  .tile .bar>i{display:block;height:100%;border-radius:4px;}
+  .b-cyan{background:linear-gradient(90deg,#0ea5e9,#38bdf8);}
+  .b-green{background:linear-gradient(90deg,#16a34a,#22c55e);}
+  .b-amber{background:linear-gradient(90deg,#d97706,#fbbf24);}
+  .b-purple{background:linear-gradient(90deg,#7c3aed,#a78bfa);}
+  .b-red{background:linear-gradient(90deg,#dc2626,#f87171);}
   .note{font-size:13px;margin-top:10px;color:#dbe7ff;} .note b{color:var(--amber);}
   .rbtns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
   .rbtns button{flex:1;min-width:130px;border:none;border-radius:10px;padding:12px;font-weight:800;font-size:14px;cursor:pointer;background:var(--card2);color:var(--text);}
@@ -85,7 +106,6 @@
   <div class="sub">Postav <b>dva</b> počítače. Nikdo ti neradí – <b>kompatibilitu i výkon se dozvíš až na konci</b>. Pozor na chytáky, co nesednou nikam!</div>
   <input id="playerName" class="name" placeholder="Tvoje jméno / přezdívka (pro žebříček)">
 
-  <!-- MISE -->
   <div id="missionScreen">
     <div class="dots" id="dots"></div>
     <div class="done-banner" id="doneBanner"></div>
@@ -93,7 +113,6 @@
     <div class="sub" style="margin-top:14px">Vyber misi a postav jí počítač. Začni skříní a základní deskou – ostatní se musí vejít a sednout k nim.</div>
   </div>
 
-  <!-- SHOP -->
   <div id="shop" style="display:none">
     <div class="missionBar" id="missionBar"></div>
     <div class="chips" id="chips"></div>
@@ -114,101 +133,94 @@
 <script>
 const KČ=n=>Math.round(n).toLocaleString('cs-CZ')+' Kč';
 
-/* =================== KATALOG =================== */
+/* =================== KATALOG (ceny ~ česká maloobchodní úroveň, Alza-ballpark) =================== */
 const DB_={
  case:[
-  {brand:'NZXT',name:'H510 Flow',form:['ATX','mATX','ITX'],maxGpu:360,maxCool:165,rad:280,psu:'ATX',price:2200},
-  {brand:'Corsair',name:'4000D Airflow',form:['ATX','mATX','ITX'],maxGpu:360,maxCool:170,rad:360,psu:'ATX',price:2400},
-  {brand:'Fractal Design',name:'Meshify 2 Compact',form:['ATX','mATX','ITX'],maxGpu:341,maxCool:169,rad:360,psu:'ATX',price:2900},
-  {brand:'Lian Li',name:'O11 Dynamic EVO',form:['ATX','mATX','ITX'],maxGpu:422,maxCool:167,rad:360,psu:'ATX',price:3600},
-  {brand:'Cooler Master',name:'NR200 (Mini-ITX)',form:['ITX'],maxGpu:330,maxCool:155,rad:280,psu:'SFX',price:2100},
-  {brand:'DeepCool',name:'CH560',form:['ATX','mATX','ITX'],maxGpu:380,maxCool:175,rad:360,psu:'ATX',price:1900},
-  {brand:'Montech',name:'AIR 903 MAX',form:['ATX','mATX','ITX'],maxGpu:400,maxCool:175,rad:360,psu:'ATX',price:1700},
-  {brand:'Cooler Master',name:'Q300L (mATX)',form:['mATX','ITX'],maxGpu:360,maxCool:159,rad:240,psu:'ATX',price:1400},
+  {brand:'NZXT',name:'H510 Flow',form:['ATX','mATX','ITX'],maxGpu:360,maxCool:165,rad:280,psu:'ATX',price:1990},
+  {brand:'Corsair',name:'4000D Airflow',form:['ATX','mATX','ITX'],maxGpu:360,maxCool:170,rad:360,psu:'ATX',price:2490},
+  {brand:'Fractal Design',name:'Meshify 2 Compact',form:['ATX','mATX','ITX'],maxGpu:341,maxCool:169,rad:360,psu:'ATX',price:2990},
+  {brand:'Lian Li',name:'O11 Dynamic EVO',form:['ATX','mATX','ITX'],maxGpu:422,maxCool:167,rad:360,psu:'ATX',price:3690},
+  {brand:'Cooler Master',name:'NR200 (Mini-ITX)',form:['ITX'],maxGpu:330,maxCool:155,rad:280,psu:'SFX',price:1990},
+  {brand:'DeepCool',name:'CH560',form:['ATX','mATX','ITX'],maxGpu:380,maxCool:175,rad:360,psu:'ATX',price:1990},
+  {brand:'Montech',name:'AIR 903 MAX',form:['ATX','mATX','ITX'],maxGpu:400,maxCool:175,rad:360,psu:'ATX',price:1690},
+  {brand:'Cooler Master',name:'Q300L (mATX)',form:['mATX','ITX'],maxGpu:360,maxCool:159,rad:240,psu:'ATX',price:1290},
  ],
- mb:[ // ramSlots, pcie16, pcie1, m2, sata, dims (mm)
-  {brand:'MSI',name:'B550 Tomahawk',socket:'AM4',chip:'B550',ram:'DDR4',form:'ATX',ramSlots:4,pcie16:2,pcie1:2,m2:2,sata:6,dims:'305×244',price:3600},
-  {brand:'Gigabyte',name:'B550M DS3H',socket:'AM4',chip:'B550',ram:'DDR4',form:'mATX',ramSlots:4,pcie16:1,pcie1:1,m2:2,sata:4,dims:'244×244',price:2000},
-  {brand:'ASUS',name:'TUF B650-PLUS',socket:'AM5',chip:'B650',ram:'DDR5',form:'ATX',ramSlots:4,pcie16:1,pcie1:2,m2:2,sata:4,dims:'305×244',price:4800},
-  {brand:'MSI',name:'MAG B650 Tomahawk',socket:'AM5',chip:'B650',ram:'DDR5',form:'ATX',ramSlots:4,pcie16:1,pcie1:1,m2:3,sata:6,dims:'305×244',price:5200},
-  {brand:'ASUS',name:'ROG Strix B650E-I',socket:'AM5',chip:'B650E',ram:'DDR5',form:'ITX',ramSlots:2,pcie16:1,pcie1:0,m2:2,sata:2,dims:'170×170',price:7000},
-  {brand:'MSI',name:'MPG X670E Carbon',socket:'AM5',chip:'X670E',ram:'DDR5',form:'ATX',ramSlots:4,pcie16:2,pcie1:1,m2:4,sata:6,dims:'305×244',price:9500},
-  {brand:'Gigabyte',name:'B760 Gaming X',socket:'LGA1700',chip:'B760',ram:'DDR4',form:'ATX',ramSlots:4,pcie16:1,pcie1:2,m2:3,sata:4,dims:'305×244',price:3800},
-  {brand:'ASRock',name:'Z790 Steel Legend',socket:'LGA1700',chip:'Z790',ram:'DDR5',form:'ATX',ramSlots:4,pcie16:1,pcie1:1,m2:4,sata:8,dims:'305×244',price:6500},
-  {brand:'MSI',name:'PRO B760M-A (mATX)',socket:'LGA1700',chip:'B760',ram:'DDR5',form:'mATX',ramSlots:4,pcie16:1,pcie1:1,m2:2,sata:4,dims:'244×244',price:3400},
-  // CHYTÁK: Threadripper deska – socket sTR5 nemá žádný náš procesor a E-ATX se nevejde do žádné skříně
-  {brand:'ASRock',name:'TRX50 WS ⚠️',socket:'sTR5',chip:'TRX50',ram:'DDR5',form:'E-ATX',ramSlots:8,pcie16:4,pcie1:0,m2:4,sata:8,dims:'305×272',price:18000},
+ mb:[
+  {brand:'MSI',name:'B550 Tomahawk',socket:'AM4',chip:'B550',ram:'DDR4',form:'ATX',ramSlots:4,pcie16:2,pcie1:2,m2:2,sata:6,dims:'305×244',price:3490},
+  {brand:'Gigabyte',name:'B550M DS3H',socket:'AM4',chip:'B550',ram:'DDR4',form:'mATX',ramSlots:4,pcie16:1,pcie1:1,m2:2,sata:4,dims:'244×244',price:1790},
+  {brand:'ASUS',name:'TUF B650-PLUS',socket:'AM5',chip:'B650',ram:'DDR5',form:'ATX',ramSlots:4,pcie16:1,pcie1:2,m2:2,sata:4,dims:'305×244',price:4990},
+  {brand:'MSI',name:'MAG B650 Tomahawk',socket:'AM5',chip:'B650',ram:'DDR5',form:'ATX',ramSlots:4,pcie16:1,pcie1:1,m2:3,sata:6,dims:'305×244',price:5490},
+  {brand:'ASUS',name:'ROG Strix B650E-I',socket:'AM5',chip:'B650E',ram:'DDR5',form:'ITX',ramSlots:2,pcie16:1,pcie1:0,m2:2,sata:2,dims:'170×170',price:7990},
+  {brand:'MSI',name:'MPG X670E Carbon',socket:'AM5',chip:'X670E',ram:'DDR5',form:'ATX',ramSlots:4,pcie16:2,pcie1:1,m2:4,sata:6,dims:'305×244',price:9990},
+  {brand:'Gigabyte',name:'B760 Gaming X',socket:'LGA1700',chip:'B760',ram:'DDR4',form:'ATX',ramSlots:4,pcie16:1,pcie1:2,m2:3,sata:4,dims:'305×244',price:3690},
+  {brand:'ASRock',name:'Z790 Steel Legend',socket:'LGA1700',chip:'Z790',ram:'DDR5',form:'ATX',ramSlots:4,pcie16:1,pcie1:1,m2:4,sata:8,dims:'305×244',price:6490},
+  {brand:'MSI',name:'PRO B760M-A (mATX)',socket:'LGA1700',chip:'B760',ram:'DDR5',form:'mATX',ramSlots:4,pcie16:1,pcie1:1,m2:2,sata:4,dims:'244×244',price:3290},
+  {brand:'ASRock',name:'TRX50 WS ⚠️',socket:'sTR5',chip:'TRX50',ram:'DDR5',form:'E-ATX',ramSlots:8,pcie16:4,pcie1:0,m2:4,sata:8,dims:'305×272',price:18990},
  ],
- cpu:[ // tier = herní výkon /100, power = špička W, tdp = potřeba chlazení W
-  {brand:'Intel',name:'Core i3-13100F',socket:'LGA1700',cores:'4 jádra / 8 vl.',tdp:60,power:90,tier:45,price:2600},
-  {brand:'Intel',name:'Core i5-12400F',socket:'LGA1700',cores:'6 jader / 12 vl.',tdp:65,power:90,tier:55,price:3500},
-  {brand:'Intel',name:'Core i5-13600K',socket:'LGA1700',cores:'14 jader / 20 vl.',tdp:150,power:180,tier:80,price:6800},
-  {brand:'Intel',name:'Core i7-14700K',socket:'LGA1700',cores:'20 jader / 28 vl.',tdp:220,power:250,tier:90,price:10500},
-  {brand:'Intel',name:'Core i9-14900K',socket:'LGA1700',cores:'24 jader / 32 vl.',tdp:250,power:300,tier:95,price:15000},
-  {brand:'AMD',name:'Ryzen 5 5600',socket:'AM4',cores:'6 jader / 12 vl.',tdp:65,power:90,tier:55,price:3200},
-  {brand:'AMD',name:'Ryzen 7 5800X3D',socket:'AM4',cores:'8 jader / 16 vl.',tdp:105,power:120,tier:85,price:8000},
-  {brand:'AMD',name:'Ryzen 5 7600X',socket:'AM5',cores:'6 jader / 12 vl.',tdp:105,power:130,tier:72,price:5500},
-  {brand:'AMD',name:'Ryzen 7 7800X3D',socket:'AM5',cores:'8 jader / 16 vl.',tdp:120,power:130,tier:95,price:11000},
-  {brand:'AMD',name:'Ryzen 9 7950X',socket:'AM5',cores:'16 jader / 32 vl.',tdp:170,power:230,tier:95,price:15500},
-  // CHYTÁK: starý socket LGA1200 – nemá žádnou desku
-  {brand:'Intel',name:'Core i5-10400F ⚠️',socket:'LGA1200',cores:'6 jader / 12 vl.',tdp:65,power:90,tier:48,price:2800},
-  // CHYTÁK: Threadripper sTR5 – žádný chladič to neuchladí a je to nesmysl pro hry
-  {brand:'AMD',name:'Threadripper 7960X ⚠️',socket:'sTR5',cores:'24 jader / 48 vl.',tdp:350,power:400,tier:92,price:45000},
+ cpu:[ // tier=herní výkon, mc=produktivita (multicore), power=špička W, tdp=potřeba chlazení W
+  {brand:'Intel',name:'Core i3-13100F',socket:'LGA1700',cores:'4 jádra / 8 vl.',tdp:60,power:90,tier:45,mc:30,price:2790},
+  {brand:'Intel',name:'Core i5-12400F',socket:'LGA1700',cores:'6 jader / 12 vl.',tdp:65,power:90,tier:55,mc:45,price:3490},
+  {brand:'Intel',name:'Core i5-13600K',socket:'LGA1700',cores:'14 jader / 20 vl.',tdp:150,power:180,tier:80,mc:78,price:7490},
+  {brand:'Intel',name:'Core i7-14700K',socket:'LGA1700',cores:'20 jader / 28 vl.',tdp:220,power:250,tier:90,mc:95,price:10990},
+  {brand:'Intel',name:'Core i9-14900K',socket:'LGA1700',cores:'24 jader / 32 vl.',tdp:250,power:300,tier:95,mc:100,price:14990},
+  {brand:'AMD',name:'Ryzen 5 5600',socket:'AM4',cores:'6 jader / 12 vl.',tdp:65,power:90,tier:55,mc:42,price:2990},
+  {brand:'AMD',name:'Ryzen 7 5800X3D',socket:'AM4',cores:'8 jader / 16 vl.',tdp:105,power:120,tier:85,mc:60,price:7990},
+  {brand:'AMD',name:'Ryzen 5 7600X',socket:'AM5',cores:'6 jader / 12 vl.',tdp:105,power:130,tier:72,mc:55,price:5490},
+  {brand:'AMD',name:'Ryzen 7 7800X3D',socket:'AM5',cores:'8 jader / 16 vl.',tdp:120,power:130,tier:95,mc:66,price:10990},
+  {brand:'AMD',name:'Ryzen 9 7950X',socket:'AM5',cores:'16 jader / 32 vl.',tdp:170,power:230,tier:90,mc:100,price:13990},
+  {brand:'Intel',name:'Core i5-10400F ⚠️',socket:'LGA1200',cores:'6 jader / 12 vl.',tdp:65,power:90,tier:48,mc:40,price:2990},
+  {brand:'AMD',name:'Threadripper 7960X ⚠️',socket:'sTR5',cores:'24 jader / 48 vl.',tdp:350,power:400,tier:92,mc:100,price:44990},
  ],
  cool:[
-  {brand:'AMD',name:'Wraith (boxový)',type:'air',sockets:['AM4','AM5'],height:70,tdpRated:75,price:0},
-  {brand:'Intel',name:'Laminar (boxový)',type:'air',sockets:['LGA1700'],height:50,tdpRated:75,price:0},
-  {brand:'Cooler Master',name:'Hyper 212',type:'air',sockets:['LGA1700','AM4','AM5'],height:159,tdpRated:150,price:900},
-  {brand:'Thermalright',name:'Peerless Assassin 120',type:'air',sockets:['LGA1700','AM4','AM5'],height:157,tdpRated:245,price:1000},
-  {brand:'be quiet!',name:'Dark Rock 4',type:'air',sockets:['LGA1700','AM4','AM5'],height:159,tdpRated:200,price:2200},
-  {brand:'Noctua',name:'NH-D15',type:'air',sockets:['LGA1700','AM4','AM5'],height:165,tdpRated:250,price:2600},
-  {brand:'Corsair',name:'iCUE H100i (AIO 240)',type:'aio',sockets:['LGA1700','AM4','AM5'],rad:240,tdpRated:250,price:3200},
-  {brand:'Arctic',name:'Liquid Freezer II 280',type:'aio',sockets:['LGA1700','AM4','AM5'],rad:280,tdpRated:300,price:2500},
-  {brand:'Arctic',name:'Liquid Freezer III 360',type:'aio',sockets:['LGA1700','AM4','AM5'],rad:360,tdpRated:360,price:3500},
-  // CHYTÁK: chladič na dávno mrtvý socket LGA775
-  {brand:'Retro',name:'Cooler LGA775 ⚠️',type:'air',sockets:['LGA775'],height:120,tdpRated:90,price:400},
+  {brand:'AMD',name:'Wraith (boxový)',type:'air',sockets:['AM4','AM5'],height:70,tdpRated:75,noise:42,price:0},
+  {brand:'Intel',name:'Laminar (boxový)',type:'air',sockets:['LGA1700'],height:50,tdpRated:75,noise:42,price:0},
+  {brand:'Cooler Master',name:'Hyper 212',type:'air',sockets:['LGA1700','AM4','AM5'],height:159,tdpRated:150,noise:33,price:790},
+  {brand:'Thermalright',name:'Peerless Assassin 120',type:'air',sockets:['LGA1700','AM4','AM5'],height:157,tdpRated:245,noise:31,price:990},
+  {brand:'be quiet!',name:'Dark Rock 4',type:'air',sockets:['LGA1700','AM4','AM5'],height:159,tdpRated:200,noise:29,price:2290},
+  {brand:'Noctua',name:'NH-D15',type:'air',sockets:['LGA1700','AM4','AM5'],height:165,tdpRated:250,noise:30,price:2790},
+  {brand:'Corsair',name:'iCUE H100i (AIO 240)',type:'aio',sockets:['LGA1700','AM4','AM5'],rad:240,tdpRated:250,noise:34,price:3490},
+  {brand:'Arctic',name:'Liquid Freezer II 280',type:'aio',sockets:['LGA1700','AM4','AM5'],rad:280,tdpRated:300,noise:33,price:2490},
+  {brand:'Arctic',name:'Liquid Freezer III 360',type:'aio',sockets:['LGA1700','AM4','AM5'],rad:360,tdpRated:360,noise:33,price:3290},
+  {brand:'Retro',name:'Cooler LGA775 ⚠️',type:'air',sockets:['LGA775'],height:120,tdpRated:90,noise:45,price:390},
  ],
  ram:[
-  {brand:'Crucial',name:'8 GB DDR4-3200',type:'DDR4',cap:8,speed:3200,price:600},
-  {brand:'Corsair',name:'Vengeance 16 GB DDR4-3200',type:'DDR4',cap:16,speed:3200,price:1200},
-  {brand:'G.Skill',name:'Ripjaws 32 GB DDR4-3600',type:'DDR4',cap:32,speed:3600,price:2300},
-  {brand:'Kingston',name:'Fury 16 GB DDR5-5200',type:'DDR5',cap:16,speed:5200,price:1700},
-  {brand:'G.Skill',name:'Trident Z5 32 GB DDR5-6000',type:'DDR5',cap:32,speed:6000,price:3000},
-  {brand:'Corsair',name:'Dominator 64 GB DDR5-5600',type:'DDR5',cap:64,speed:5600,price:6500},
-  // CHYTÁK: DDR3 – žádná deska ho neumí
-  {brand:'Kingston',name:'16 GB DDR3-1600 ⚠️',type:'DDR3',cap:16,speed:1600,price:500},
+  {brand:'Crucial',name:'8 GB DDR4-3200',type:'DDR4',cap:8,speed:3200,price:490},
+  {brand:'Corsair',name:'Vengeance 16 GB DDR4-3200',type:'DDR4',cap:16,speed:3200,price:990},
+  {brand:'G.Skill',name:'Ripjaws 32 GB DDR4-3600',type:'DDR4',cap:32,speed:3600,price:1990},
+  {brand:'Kingston',name:'Fury 16 GB DDR5-5200',type:'DDR5',cap:16,speed:5200,price:1490},
+  {brand:'G.Skill',name:'Trident Z5 32 GB DDR5-6000',type:'DDR5',cap:32,speed:6000,price:2790},
+  {brand:'Corsair',name:'Dominator 64 GB DDR5-5600',type:'DDR5',cap:64,speed:5600,price:5990},
+  {brand:'Kingston',name:'16 GB DDR3-1600 ⚠️',type:'DDR3',cap:16,speed:1600,price:590},
  ],
- gpu:[ // length mm, slots (šířka), power W, tier /100
-  {brand:'ASUS',name:'Dual RTX 4060',vram:8,length:200,slots:2,power:115,tier:45,price:8000},
-  {brand:'Sapphire',name:'RX 7600 Pulse',vram:8,length:200,slots:2,power:165,tier:42,price:7000},
-  {brand:'MSI',name:'Ventus RTX 4060 Ti',vram:8,length:200,slots:2,power:160,tier:52,price:10000},
-  {brand:'Intel',name:'Arc A770 LE',vram:16,length:280,slots:2,power:225,tier:55,price:8500},
-  {brand:'MSI',name:'Ventus RTX 4070 Super',vram:12,length:250,slots:2,power:220,tier:72,price:15500},
-  {brand:'Sapphire',name:'RX 7800 XT Nitro+',vram:16,length:267,slots:3,power:263,tier:70,price:14000},
-  {brand:'Gigabyte',name:'RTX 4080 Super Gaming',vram:16,length:340,slots:3,power:320,tier:88,price:27000},
-  {brand:'ASUS',name:'TUF RX 7900 XTX',vram:24,length:320,slots:3,power:355,tier:90,price:25000},
-  {brand:'ASUS',name:'ROG Strix RTX 4090',vram:24,length:358,slots:3,power:450,tier:100,price:48000},
-  // CHYTÁK: obří karta 430 mm – nevejde se do žádné skříně (max 422)
-  {brand:'ASUS',name:'ROG Matrix RTX 4090 (430 mm) ⚠️',vram:24,length:430,slots:4,power:450,tier:100,price:55000},
+ gpu:[ // length mm, slots, power W, tier=herní výkon /100, ts=3DMark TimeSpy graphics
+  {brand:'ASUS',name:'Dual RTX 4060',vram:8,length:200,slots:2,power:115,tier:45,ts:10600,price:7490},
+  {brand:'Sapphire',name:'RX 7600 Pulse',vram:8,length:200,slots:2,power:165,tier:42,ts:10200,price:6490},
+  {brand:'MSI',name:'Ventus RTX 4060 Ti',vram:8,length:200,slots:2,power:160,tier:52,ts:13500,price:9490},
+  {brand:'Intel',name:'Arc A770 LE',vram:16,length:280,slots:2,power:225,tier:55,ts:13800,price:7990},
+  {brand:'MSI',name:'Ventus RTX 4070 Super',vram:12,length:250,slots:2,power:220,tier:72,ts:19500,price:15490},
+  {brand:'Sapphire',name:'RX 7800 XT Nitro+',vram:16,length:267,slots:3,power:263,tier:70,ts:19000,price:13490},
+  {brand:'Gigabyte',name:'RTX 4080 Super Gaming',vram:16,length:340,slots:3,power:320,tier:88,ts:28500,price:26990},
+  {brand:'ASUS',name:'TUF RX 7900 XTX',vram:24,length:320,slots:3,power:355,tier:90,ts:29500,price:24990},
+  {brand:'ASUS',name:'ROG Strix RTX 4090',vram:24,length:358,slots:3,power:450,tier:100,ts:36500,price:46990},
+  {brand:'ASUS',name:'ROG Matrix RTX 4090 (430 mm) ⚠️',vram:24,length:430,slots:4,power:450,tier:100,ts:36500,price:54990},
  ],
- sto:[
-  {brand:'Kingston',name:'NV2 500 GB (NVMe)',kind:'NVMe SSD',cap:'500 GB',price:800},
-  {brand:'WD',name:'Black SN770 1 TB (NVMe)',kind:'NVMe SSD',cap:'1 TB',price:1600},
-  {brand:'Samsung',name:'990 Pro 1 TB (NVMe)',kind:'NVMe SSD',cap:'1 TB',price:2400},
-  {brand:'Crucial',name:'P3 Plus 2 TB (NVMe)',kind:'NVMe SSD',cap:'2 TB',price:2800},
-  {brand:'Samsung',name:'870 EVO 1 TB (SATA)',kind:'SATA SSD',cap:'1 TB',price:1500},
-  {brand:'Seagate',name:'Barracuda 2 TB (HDD)',kind:'HDD',cap:'2 TB',price:1100},
+ sto:[ // speed = sekvenční čtení MB/s
+  {brand:'Kingston',name:'NV2 500 GB (NVMe)',kind:'NVMe SSD',cap:'500 GB',speed:3500,price:690},
+  {brand:'WD',name:'Black SN770 1 TB (NVMe)',kind:'NVMe SSD',cap:'1 TB',speed:5150,price:1490},
+  {brand:'Samsung',name:'990 Pro 1 TB (NVMe)',kind:'NVMe SSD',cap:'1 TB',speed:7450,price:2290},
+  {brand:'Crucial',name:'P3 Plus 2 TB (NVMe)',kind:'NVMe SSD',cap:'2 TB',speed:5000,price:2790},
+  {brand:'Samsung',name:'870 EVO 1 TB (SATA)',kind:'SATA SSD',cap:'1 TB',speed:560,price:1690},
+  {brand:'Seagate',name:'Barracuda 2 TB (HDD)',kind:'HDD',cap:'2 TB',speed:190,price:1290},
  ],
  psu:[
-  {brand:'Cooler Master',name:'MWE 550 W',watts:550,form:'ATX',rating:'Bronze',price:1200},
-  {brand:'MSI',name:'MAG A650BN 650 W',watts:650,form:'ATX',rating:'Bronze',price:1400},
-  {brand:'be quiet!',name:'Pure Power 11 650 W',watts:650,form:'ATX',rating:'Gold',price:1800},
-  {brand:'Corsair',name:'RM750e 750 W',watts:750,form:'ATX',rating:'Gold',price:2300},
-  {brand:'Seasonic',name:'Focus GX 850 W',watts:850,form:'ATX',rating:'Gold',price:2900},
-  {brand:'EVGA',name:'SuperNOVA 1000 W',watts:1000,form:'ATX',rating:'Gold',price:3800},
-  {brand:'Corsair',name:'SF750 (SFX)',watts:750,form:'SFX',rating:'Platinum',price:3400},
-  // CHYTÁK: TFX zdroj z kanceláře – nevejde se do žádné herní skříně a je slabý
-  {brand:'FSP',name:'TFX 300 W ⚠️',watts:300,form:'TFX',rating:'—',price:600},
+  {brand:'Cooler Master',name:'MWE 550 W',watts:550,form:'ATX',rating:'Bronze',price:1090},
+  {brand:'MSI',name:'MAG A650BN 650 W',watts:650,form:'ATX',rating:'Bronze',price:1290},
+  {brand:'be quiet!',name:'Pure Power 11 650 W',watts:650,form:'ATX',rating:'Gold',price:1790},
+  {brand:'Corsair',name:'RM750e 750 W',watts:750,form:'ATX',rating:'Gold',price:2290},
+  {brand:'Seasonic',name:'Focus GX 850 W',watts:850,form:'ATX',rating:'Gold',price:2790},
+  {brand:'EVGA',name:'SuperNOVA 1000 W',watts:1000,form:'ATX',rating:'Gold',price:3990},
+  {brand:'Corsair',name:'SF750 (SFX)',watts:750,form:'SFX',rating:'Platinum',price:3990},
+  {brand:'FSP',name:'TFX 300 W ⚠️',watts:300,form:'TFX',rating:'—',price:690},
  ],
 };
 const CATS=[
@@ -224,11 +236,11 @@ const CATS=[
 const spec={
  case:c=>`velikosti <b>${c.form.join(' / ')}</b> · grafika do <b>${c.maxGpu} mm</b> · chladič do <b>${c.maxCool} mm</b> · zdroj <b>${c.psu}</b> · vodní do ${c.rad} mm`,
  mb:  c=>`socket <b>${c.socket}</b> · ${c.chip} · <b>${c.ram}</b> · <b>${c.form}</b> (${c.dims} mm)<br>sloty: RAM <b>${c.ramSlots}×</b> · PCIe ×16 <b>${c.pcie16}×</b> · PCIe ×1 <b>${c.pcie1}×</b> · M.2 <b>${c.m2}×</b> · SATA <b>${c.sata}×</b>`,
- cpu: c=>`socket <b>${c.socket}</b> · ${c.cores} · chlazení <b>${c.tdp} W</b> · špička ${c.power} W · herní výkon <b>${c.tier}/100</b>`,
- cool:c=> c.type==='air' ? `vzduch · ${c.sockets.join('/')} · výška <b>${c.height} mm</b> · uchladí do <b>${c.tdpRated} W</b>` : `voda AIO <b>${c.rad} mm</b> · ${c.sockets.join('/')} · uchladí do <b>${c.tdpRated} W</b>`,
+ cpu: c=>`socket <b>${c.socket}</b> · ${c.cores} · chlazení <b>${c.tdp} W</b> · špička ${c.power} W · herní <b>${c.tier}/100</b> · produktivita <b>${c.mc}/100</b>`,
+ cool:c=> c.type==='air' ? `vzduch · ${c.sockets.join('/')} · výška <b>${c.height} mm</b> · uchladí do <b>${c.tdpRated} W</b> · ~${c.noise} dB` : `voda AIO <b>${c.rad} mm</b> · ${c.sockets.join('/')} · uchladí do <b>${c.tdpRated} W</b> · ~${c.noise} dB`,
  ram: c=>`<b>${c.type}</b> · <b>${c.cap} GB</b> · ${c.speed} MHz`,
- gpu: c=>`<b>${c.vram} GB</b> · délka <b>${c.length} mm</b> · ${c.slots} sloty · <b>${c.power} W</b> · herní výkon <b>${c.tier}/100</b>`,
- sto: c=>`<b>${c.kind}</b> · ${c.cap}`,
+ gpu: c=>`<b>${c.vram} GB</b> · délka <b>${c.length} mm</b> · ${c.slots} sloty · <b>${c.power} W</b> · herní <b>${c.tier}/100</b>`,
+ sto: c=>`<b>${c.kind}</b> · ${c.cap} · ${c.speed} MB/s`,
  psu: c=>`<b>${c.watts} W</b> · <b>${c.form}</b> · ${c.rating}`,
 };
 
@@ -253,13 +265,11 @@ function renderMissions(){
  if(MISS.every(m=>missionsDone[m.id])){ const b=$('doneBanner'); b.style.display='block';
   b.innerHTML='🏆 <b>Postavil jsi oba počítače!</b><br><span style="color:var(--muted);font-size:13px">Nejvyšší výkon: '+best.power+'/100 · nejlepší poměr: '+best.value+' bodů / 10 000 Kč</span>'; }
 }
-
 function openShop(m){ curMission=m; sel={}; curCat='case';
  $('missionScreen').style.display='none'; $('shop').style.display='block'; $('footer').style.display='block'; $('report').className='report';
  $('missionBar').innerHTML=`${m.ic} Mise: <b>${m.name}</b> <span class="link" onclick="renderMissions()">← zpět na výběr mise</span>`;
  render();
 }
-
 function renderChips(){ const c=$('chips'); c.innerHTML='';
  CATS.forEach(cat=>{ const el=document.createElement('div'); el.className='chip'+(cat.key===curCat?' active':'');
   el.innerHTML=`${cat.ic} ${cat.lab} ${sel[cat.key]?'<span class="ok">✓</span>':''}`;
@@ -276,7 +286,7 @@ function renderFoot(){ const n=CATS.filter(c=>sel[c.key]).length;
  $('footInfo').innerHTML=`Vybráno <b>${n}/8</b> · Cena: <b>${KČ(totalPrice())}</b>`; $('buildBtn').disabled=n<8; }
 function render(){ renderChips(); renderCat(); renderFoot(); }
 
-/* =================== KONTROLA + VÝKON =================== */
+/* =================== KONTROLA =================== */
 function evaluate(){
  const b=sel, errs=[], oks=[];
  const add=(cond,ok,bad)=>{ (cond?oks:errs).push(cond?ok:bad); };
@@ -293,9 +303,12 @@ function evaluate(){
  add(b.psu.watts>=needed, `Zdroj má dost výkonu (${b.psu.watts} W ≥ potřeba ~${needed} W)`, `Slabý zdroj: potřeba ~${needed} W, máš ${b.psu.watts} W`);
  return {errs,oks,needed};
 }
-function performance(){
+
+/* =================== VÝKON (hodně parametrů) =================== */
+function metrics(){
  const b=sel, gpu=b.gpu.tier, cpu=b.cpu.tier, notes=[];
  let score=Math.round(gpu*0.7 + Math.min(gpu,cpu*1.15)*0.3);
+ const balance=Math.max(0,100-Math.abs(cpu-gpu));
  if(cpu<gpu-20){ score-=8; notes.push(['bad','Procesor brzdí grafiku (CPU bottleneck) – nevytěžíš plný výkon karty.']); }
  else notes.push(['ok','Procesor a grafika jsou slušně vyvážené.']);
  if(b.ram.cap<16){ score-=10; notes.push(['bad','Málo RAM (pod 16 GB) – moderní hry budou sekat.']); }
@@ -305,34 +318,59 @@ function performance(){
  score=Math.max(5,Math.min(100,score));
  const cap=Math.round(cpu*2.6);
  const fps1080=Math.min(cap,Math.round(gpu*1.9)), fps1440=Math.min(cap,Math.round(gpu*1.3)), fps4k=Math.round(gpu*0.7);
+ const draw=b.cpu.power+b.gpu.power+80;
+ const psuHead=Math.round((b.psu.watts-draw)/b.psu.watts*100);
+ const thermHead=Math.max(0,Math.round((b.cool.tdpRated-b.cpu.tdp)/b.cool.tdpRated*100));
+ const ts3d=b.gpu.ts;
+ const cine=Math.round(b.cpu.mc*400);
+ const passmark=Math.round(b.cpu.mc*350+3000);
+ const bottleneck = cpu<gpu-20?'CPU brzdí GPU' : gpu<cpu-20?'GPU je limit (u her běžné)' : 'vyvážené';
+ let vramV = b.gpu.vram>=16?'i 4K a do budoucna' : b.gpu.vram>=12?'pohodlně 1440p' : b.gpu.vram>=8?'OK 1080p/1440p' : 'málo i na 1080p';
  let catg = fps1440>=100?'🔥 1440p Ultra i 4K – špičkový herní stroj' : fps1440>=60?'💪 1440p na vysoké detaily' : fps1080>=60?'👍 1080p plynule na vysoké' : '🙂 1080p na střední detaily';
- return {score,fps1080,fps1440,fps4k,catg,notes};
+ return {score,fps1080,fps1440,fps4k,catg,notes,gpuTier:gpu,cpuTier:cpu,mc:b.cpu.mc,ts3d,cine,passmark,draw,psuHead,thermHead,balance,bottleneck,vram:b.gpu.vram,vramV,ssd:b.sto.speed,ssdKind:b.sto.kind,ramCap:b.ram.cap,ramType:b.ram.type,ramSpeed:b.ram.speed,noise:b.cool.noise,psuW:b.psu.watts};
 }
+function tile(lbl,val,sub,pct,cls){ return `<div class="tile"><div class="lbl">${lbl}</div><div class="val">${val}${sub?` <small>${sub}</small>`:''}</div>${pct!=null?`<div class="bar"><i class="${cls||'b-cyan'}" style="width:${Math.max(3,Math.min(100,pct))}%"></i></div>`:''}</div>`; }
 
 function buildIt(){
  const {errs,oks}=evaluate(); const works=errs.length===0; const price=totalPrice();
  $('shop').style.display='none'; $('footer').style.display='none';
  const r=$('report'); r.className='report show'; let html='';
  if(works){
-  const p=performance();
-  const value=Math.round(p.score*10000/price); // body výkonu na 10 000 Kč
+  const p=metrics();
+  const value=Math.round(p.score*10000/price);
   const valLbl = value>=22?'🔥 skvělý poměr cena/výkon' : value>=15?'👍 dobrý poměr' : '🙂 dá se, ale je to drahé';
   html+=`<div class="verdict ok"><div style="font-size:44px">✅</div><h2>Počítač naběhne!</h2><div style="color:var(--muted)">Všechny komponenty jsou kompatibilní. Cena: <b style="color:var(--amber)">${KČ(price)}</b></div></div>`;
-  // headline dle mise
-  if(curMission.id==='value'){
-   html+=`<div class="perf"><h3>💰 Poměr cena/výkon: ${value} <span style="font-size:13px;color:var(--muted)">bodů výkonu / 10 000 Kč</span></h3>
-    <div style="font-weight:800;color:var(--cyan)">${valLbl}</div>
-    <div class="note" style="margin-top:8px">Herní výkon <b>${p.score}/100</b> za <b>${KČ(price)}</b>. Čím vyšší poměr, tím lepší koupě.</div></div>`;
-  }
-  html+=`<div class="perf"><h3>🎯 Herní výkon: ${p.score}/100</h3><div class="meter"><div style="width:${p.score}%">${p.score}</div></div>
-   <div style="text-align:center;margin-top:10px;font-weight:800;color:var(--cyan)">${p.catg}</div>
-   <div class="fps"><div class="f"><div class="n">${p.fps1080}</div><div class="l">FPS · 1080p</div></div><div class="f"><div class="n">${p.fps1440}</div><div class="l">FPS · 1440p</div></div><div class="f"><div class="n">${p.fps4k}</div><div class="l">FPS · 4K</div></div></div>`;
+  // hlavní gauge
+  html+=`<div class="panel"><div class="ph">Herní výkon · celkové skóre</div>
+   <div class="scoreBig"><span class="n">${p.score}</span><span class="m">/ 100</span></div>
+   <div class="meter"><div style="width:${p.score}%">${p.score}</div></div>
+   <div class="catg">${p.catg}</div>
+   <div class="fps"><div class="f"><div class="n">${p.fps1080}</div><div class="l">FPS · 1080p</div></div><div class="f"><div class="n">${p.fps1440}</div><div class="l">FPS · 1440p</div></div><div class="f"><div class="n">${p.fps4k}</div><div class="l">FPS · 4K</div></div></div></div>`;
+  // dashboard s parametry
+  html+=`<div class="panel"><div class="ph">Rozbor komponent · telemetrie</div><div class="dash">`;
+  html+=tile('GPU výkon',p.gpuTier,'/100',p.gpuTier,'b-green');
+  html+=tile('CPU herní',p.cpuTier,'/100',p.cpuTier,'b-cyan');
+  html+=tile('CPU produktivita',p.mc,'/100',p.mc,'b-purple');
+  html+=tile('Vyváženost',p.balance+'%',p.bottleneck,p.balance,'b-amber');
+  html+=tile('3DMark Time Spy',p.ts3d.toLocaleString('cs-CZ'),'grafika',Math.min(100,p.ts3d/380),'b-green');
+  html+=tile('Cinebench R23',p.cine.toLocaleString('cs-CZ'),'multi-core',Math.min(100,p.cine/420),'b-purple');
+  html+=tile('PassMark CPU',p.passmark.toLocaleString('cs-CZ'),null,Math.min(100,p.passmark/430),'b-cyan');
+  html+=tile('VRAM',p.vram+' GB',p.vramV,p.vram/24*100,'b-green');
+  html+=tile('Spotřeba PC',p.draw+' W','ve hře',Math.min(100,p.draw/8),'b-red');
+  html+=tile('Rezerva zdroje',p.psuHead+'%',p.psuW+' W',p.psuHead,p.psuHead>=30?'b-green':'b-amber');
+  html+=tile('Chlazení – rezerva',p.thermHead+'%','tepla navíc',p.thermHead,p.thermHead>=25?'b-green':'b-amber');
+  html+=tile('Hlučnost',p.noise+' dB',p.noise<=34?'tiché':'hlučnější',Math.min(100,(50-p.noise)/22*100),'b-cyan');
+  html+=tile('Rychlost disku',p.ssd.toLocaleString('cs-CZ'),'MB/s ('+p.ssdKind+')',Math.min(100,p.ssd/75),'b-amber');
+  html+=tile('RAM',p.ramCap+' GB',p.ramType+' '+p.ramSpeed,Math.min(100,p.ramCap/64*100),'b-purple');
+  html+=tile('Cena / výkon',value,'b. / 10 000 Kč',Math.min(100,value*3.3),'b-green');
+  html+=tile('Cena celkem',KČ(price).replace(' Kč',''),'Kč',null,'b-amber');
+  html+=`</div></div>`;
+  if(curMission.id==='value') html+=`<div class="panel"><div class="ph">Hodnocení mise · cena/výkon</div><div class="scoreBig"><span class="n">${value}</span><span class="m">bodů výkonu / 10 000 Kč</span></div><div class="catg">${valLbl}</div></div>`;
+  html+=`<div class="panel"><div class="ph">Poznámky</div>`;
   p.notes.forEach(([t,m])=>html+=`<div class="note">${t==='ok'?'✅':'⚠️'} ${m}</div>`);
-  html+=`<div class="note" style="margin-top:12px;color:var(--muted)">FPS jsou orientační pro náročnou AAA hru na vysoké detaily.</div></div>`;
-  // ulož výsledky mise
-  missionsDone[curMission.id]=true;
-  best.power=Math.max(best.power,p.score); best.value=Math.max(best.value,value);
-  html+=`<div class="perf"><b>Kód pro učitele:</b> <span class="code">PCB-${String(p.score).padStart(3,'0')}-${String(value).padStart(3,'0')}</span></div>`;
+  html+=`<div class="note" style="color:var(--muted)">Skóre i FPS jsou orientační (náročná AAA hra, vysoké detaily). Syntetické testy jsou ilustrativní.</div></div>`;
+  html+=`<div class="panel"><b>Kód pro učitele:</b> <span class="code">PCB-${String(p.score).padStart(3,'0')}-${String(value).padStart(3,'0')}</span></div>`;
+  missionsDone[curMission.id]=true; best.power=Math.max(best.power,p.score); best.value=Math.max(best.value,value);
   submit();
  } else {
   html+=`<div class="verdict no"><div style="font-size:44px">❌</div><h2>Počítač nenaběhne</h2><div style="color:var(--muted)">Našli jsme <b style="color:#fecaca">${errs.length}</b> ${errs.length===1?'chybu':'chyb'} v kompatibilitě. Oprav je a zkus to znovu.</div></div>`;
